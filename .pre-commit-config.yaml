@@ -35,8 +35,8 @@ repos:
         language_version: python3
         args: [--target-version=py310]
 
-  - repo: https://github.com/hadialqattan/pycln
-    rev: v2.1.1
-    hooks:
-      - id: pycln
-        args: [--config=pyproject.toml]
+#  - repo: https://github.com/hadialqattan/pycln
+#    rev: v2.1.1
+#    hooks:
+#      - id: pycln
+#        args: [--config=pyproject.toml]
