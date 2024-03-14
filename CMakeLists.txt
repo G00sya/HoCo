@@ -2,38 +2,25 @@ cmake_minimum_required(VERSION 3.5)
 
 project(coco)
 
-set(COCO_FRAME_DIR ../coco_exec)
-find_program(COCO ${COCO_FRAME_DIR}/Coco.exe  HINTS .. )
+set(TARGET_NAME HoCo)
 
-
-set(PARSER_DIR_SRC ../parser_src)
-add_custom_target(build-time-make-directory ALL
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${PARSER_DIR_SRC})
-
+find_program(COCO "coco")
 
 set(generated_source_files
-        ${PARSER_DIR_SRC}/Scanner.cpp
-        ${PARSER_DIR_SRC}/Scanner.h
-        ${PARSER_DIR_SRC}/Parser.cpp
-        ${PARSER_DIR_SRC}/Parser.h
+        ${generated_source_files}/main.py
 )
-set_source_files_properties(${generated_source_files} PROPERTIES GENERATED TRUE)
 
-set(GRAMMAR_FILE ../grammar.atg)
+set(GRAMMAR_FILE ../parser_src/grammar.atg.py)
 
 add_custom_command(
         OUTPUT ${generated_source_files}
-        COMMAND ${COCO} ${GRAMMAR_FILE} -frames ${COCO_FRAME_DIR} -o ${PARSER_DIR_SRC}
-        COMMENT "Generating Parser from ${GRAMMAR_FILE} with ${COCO}"
+        COMMAND ${COCO} -c ${GRAMMAR_FILE}
 )
 
-set(SOURCES 
-    main.cpp
-    ${generated_source_files}
+add_custom_target(
+        always_run_target ALL
+        DEPENDS ${generated_source_files}
 )
-
-add_executable(${PROJECT_NAME} ${SOURCES})
-
 
 
 

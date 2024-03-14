@@ -1,7 +1,6 @@
 *build*
 *.cache*
 *.vscode*
-some
-Taste
-parser_src
-coco_exec
+*__pycache__*
+*Parser.py*
+*Scanner.py*
