@@ -1,0 +1,39 @@
+COMPILER HoCo
+
+IGNORECASE
+CHARACTERS
+letter = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".
+digit = "0123456789".
+cr  = '\r'.
+lf  = '\n'.
+tab = '\t'.
+ 
+TOKENS
+ident  = letter {letter | digit | "_"}.
+number = digit {digit}.
+ 
+COMMENTS FROM "/*" TO "*/" NESTED
+COMMENTS FROM "//" TO cr lf
+ 
+IGNORE cr + lf + tab
+
+PRODUCTIONS
+  HoCo =        ident Scenes.
+
+  Scenes =      ScenesBody. 
+  
+  ScenesBody =  "{" ident Scene {ident Scene} "}".
+
+  Scene =       SceneBody .
+
+  SceneBody =   "{" Expression {Expression} "}".
+
+  Expression =  ident "=" NumExpr ";" { ident "=" NumExpr ";"} .
+
+  NumExpr =     Term {("+" | "-") NumExpr} .
+
+  Term =        Multiplier {( "*" | "/" ) Term} .
+  
+  Multiplier =  ident | number | "(" NumExpr ")".
+
+END HoCo.
