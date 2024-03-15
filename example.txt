@@ -1,0 +1,29 @@
+Scenes {
+    Scene1 {
+        a = 1;
+    }
+    Scene2 {
+        b = 3 + 3;
+        a = b + 3;
+    }
+    Scene3 {
+        k = 3;
+    }
+    Scene2 {
+        b = 3 + 3;
+        a = b + 3;
+    }
+    Scene5 {
+        k = 3;
+    }
+}
+
+Events {
+    Event1 {
+        df_  = 100;
+    }
+
+    Event2 {
+        dsc = 300;
+    }
+}

@@ -18,7 +18,7 @@ COMMENTS FROM "//" TO cr lf
 IGNORE cr + lf + tab
 
 PRODUCTIONS
-  HoCo =        ident Scenes.
+  HoCo =        ident Scenes ident Events.
 
   Scenes =      ScenesBody. 
   
@@ -27,6 +27,14 @@ PRODUCTIONS
   Scene =       SceneBody .
 
   SceneBody =   "{" Expression {Expression} "}".
+
+  Events =      EventsBody.
+
+  EventsBody =  "{" ident Event {ident Event} "}".
+
+  Event =       EventBody.
+
+  EventBody =  "{" Expression {Expression} "}".
 
   Expression =  ident "=" NumExpr ";" { ident "=" NumExpr ";"} .
 
