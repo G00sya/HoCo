@@ -4,3 +4,5 @@
 *__pycache__*
 *Parser.py*
 *Scanner.py*
+*.old
+HoCo.py
