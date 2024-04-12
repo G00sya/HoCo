@@ -1,4 +1,6 @@
-COMPILER HoCo
+from AstTree import Node
+
+COMPILER VeKrestKrest
 
 IGNORECASE
 CHARACTERS
@@ -7,41 +9,105 @@ digit = "0123456789".
 cr  = '\r'.
 lf  = '\n'.
 tab = '\t'.
+strings  = CHR(32) .. CHR(255) - '"'.
  
 TOKENS
-ident  = letter {letter | digit | "_"}.
+identifier  = letter {letter | digit | "_"}.
 number = digit {digit}.
- 
-COMMENTS FROM "/*" TO "*/" NESTED
-COMMENTS FROM "//" TO cr lf
+string     = '"' { strings } '"' .
  
 IGNORE cr + lf + tab
 
 PRODUCTIONS
-  HoCo =        ident Scenes ident Events.
+  VeKrestKrest = {Defenition}.
 
-  Scenes =      ScenesBody. 
+  Defenition = identifier Params "->" Type FunctionDefinition.
+
+  Params                         = "(" [ FormalParamList ] ")".
+  FormalParamList                = FormalParameter {"," FormalParameter}.
+  FunctionDefinition             = CompoundStatement .
+  FormalParameter                = Type [ identifier ]  .
+
+  Type                           = "CELINA" ["[" [ConstExpression] "]"] | "BUKV" | 
+                                 "DROB"["[" ConstExpression "]"] | "PRAVDA" [ "[" ConstExpression "]"].
   
-  ScenesBody =  "{" ident Scene {ident Scene} "}".
+  Statement                      = (  AssignmentExpression | CompoundStatement | IfStatement | ReturnStatement | WhileStatement ) .
 
-  Scene =       SceneBody .
+  CompoundStatement              = "{" {LocalDeclaration} {Statement} "}"  .
 
-  SceneBody =   "{" Expression {Expression} "}".
+  LocalDeclaration               = Type identifier 
+                                 ( "(" [ FormalParamList ] ")" 
+                                 | "=" Expression<out tree> (. tree.PrintChildrens() .) 
+                                 )";".
 
-  Events =      EventsBody.
+  ConstExpression                = Expression<out tree> .
+  Expression<out tree>           = (. tree = Node() .) 
+                                 Conditional<out tree>
+                                 { AssignmentOperator Expression<out sub_tree> (. tree.AddChild(sub_tree) .)}.
 
-  EventsBody =  "{" ident Event {ident Event} "}".
-
-  Event =       EventBody.
-
-  EventBody =  "{" Expression {Expression} "}".
-
-  Expression =  ident "=" NumExpr ";" { ident "=" NumExpr ";"} .
-
-  NumExpr =     Term {("+" | "-") NumExpr} .
-
-  Term =        Multiplier {( "*" | "/" ) Term} .
+  ReturnStatement                = "VOZDAT" [ Expression<out tree> ] ";" .
+  WhileStatement                 = "DOKOLE" "(" Expression<out tree> ")" Statement .
+  IfStatement                    = "KOLI" "(" Expression<out tree> ")" Statement [ "else" Statement ] .
   
-  Multiplier =  ident | number | "(" NumExpr ")".
+  AssignmentExpression           = Expression<out tree> ";" .
 
-END HoCo.
+  Conditional<out tree>          = LogORExp<out tree> .
+  LogORExp<out tree>             = LogANDExp<out tree>   { "ALI" LogANDExp<out tree> } .
+  LogANDExp<out tree>            = EqualExp<out tree>   { "DA" EqualExp<out tree> }.
+  EqualExp<out tree>             = RelationExp<out tree> { ( "==" ) RelationExp<out tree> } .
+  RelationExp<out tree>          = AddExp<out tree>    { ( "<" | ">" | "<=" | ">=" ) AddExp<out tree> }.
+  AddExp<out tree>               = (. tree = Node() .)
+                                 MultExp<out sub_tree_1> 
+                                 (. tree.AddChild(sub_tree_1) .)   
+                                 {(.op = '' .) 
+                                 ( "+"(. op = "+" .) | "-" (. op = "-" .) ) 
+                                 MultExp<out sub_tree_2> 
+                                 (. tree.AddChild(Node(op))
+                                    tree.AddChild(sub_tree_1) 
+                                 .)}.
+
+  MultExp<out tree>              = (. tree = Node() .) 
+                                 CastExp<out sub_tree_1> 
+                                 (. tree.AddChild(sub_tree_1) .)   
+                                 { (. op = '' .)
+                                 ( "*"  (.op = "*" .) 
+                                 | "/" (.op = "*" .)
+                                 | "%" (.op = "*" .)) 
+                                 CastExp<out sub_tree_2>
+                                 (. tree.AddChild(Node(op))
+                                    tree.AddChild(sub_tree_2) .)
+                                 }.
+
+  CastExp<out tree>    = UnaryExp<out sub_tree>(. tree = sub_tree .) .
+  UnaryExp<out tree>   = (. tree = Node("1") .)
+                         PostFixExp<out s> 
+                         | UnaryOperator<out op> CastExp<out sub_tree> 
+                         (. tree.AddChild(Node(op))
+                            tree.AddChild(sub_tree) .).
+
+  PostFixExp<out tree> = (. tree = Node() .) 
+                         Primary<out child> 
+
+                         { "[" Expression<out sub_tree> "]" 
+                         | FunctionCall<out params_tree> 
+                         (. tree.AddChild(params_tree) .) }.
+
+  Primary<out child> = identifier(. child = Node("s=self.token.val") .) 
+                    | string(. child = Node("s=self.token.val") .) 
+                    | number(. child = Node("s=self.token.val") .) 
+                    | "(" Expression<out tree> ")"  
+                       (. child = Node("()") 
+                          child.AddChild(tree) .).
+
+  FunctionCall<out res> = (. res = Node("void"); .)
+                          "(" [ ActualParameters<out expr> (. res.AddChild(expr) .)] ")" .
+
+  ActualParameters<out tree> = (. tree = Node("params") .) 
+                           Expression<out expr>(. tree.AddChild(expr) .) 
+                           { "," Expression<out expr2> (. tree.AddChild(exprw) .) } .
+
+  AssignmentOperator   =   "="  | "*=" | "/=" | "%=" | "+=" .
+
+  UnaryOperator<out op>        = "+" (.op = self.token.val.) | "-"(.op = self.token.val.) | "*"(.op = self.token.val.) | "NE" (.op = self.token.val.) .
+
+END VeKrestKrest.
