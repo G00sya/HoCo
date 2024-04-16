@@ -1,0 +1,55 @@
+COMPILER HoCo
+
+/* The best language for smart home programming! */
+
+IGNORECASE
+
+CHARACTERS
+  letter   = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".
+  digit    = "0123456789".
+  strings  = CHR(32) .. CHR(255) - '"'.
+  cr  = '\r'.
+  lf  = '\n'.
+  tab = '\t'.
+
+TOKENS
+  ident  = ( "_" | letter) { "_" | letter | digit }.
+  number = digit {digit}.
+  string     = '"' { strings } '"'.
+
+PRAGMAS
+
+COMMENTS FROM "/*" TO "*/" NESTED
+COMMENTS FROM "//" TO cr lf
+
+IGNORE cr + lf + tab
+
+PRODUCTIONS
+
+  HoCo =        ident Scenes ident Events.
+
+  Scenes =      ScenesBody.
+
+  ScenesBody =  "{" ident Scene {ident Scene} "}".
+
+  Scene =       SceneBody .
+
+  SceneBody =   "{" Expression {Expression} "}".
+
+  Events =      EventsBody.
+
+  EventsBody =  "{" ident Event {ident Event} "}".
+
+  Event =       EventBody.
+
+  EventBody =  "{" Expression {Expression} "}".
+
+  Expression =  ident "=" NumExpr ";" { ident "=" NumExpr ";"} .
+
+  NumExpr =     Term {("+" | "-") NumExpr} .
+
+  Term =        Multiplier {( "*" | "/" ) Term} .
+
+  Multiplier =  ident | number | "(" NumExpr ")".
+
+END HoCo.
