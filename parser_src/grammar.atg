@@ -19,26 +19,30 @@ string                         = '"' { strings } '"' .
 IGNORE cr + lf + tab
 
 PRODUCTIONS
-  VeKrestKrest                 = { Defenition } .
+  VeKrestKrest                 = { Defenition<out defTree> (. defTree.PrintChildrens(0) .)} .
 
-  Defenition                   = identifier (. name = self.token.val .) 
-                                 Params "->" Type 
-                                 (. type = ':' + self.token.val .)
+  Defenition<out defTree>         = identifier (. name = self.token.val .) 
+                                 Params<out params> "->" Type<out type>
                                  FunctionDefinition<out tree> 
                                  (. 
-                                    print(name + type)
-                                    tree.PrintChildrens(0);
+                                    defTree = Node(f'{name}({params})->{type}')
+                                    defTree.AddChild(tree)
                                  .).
 
-  Params                       = "(" [ FormalParamList ] ")" .
-  FormalParamList              = FormalParameter {"," FormalParameter} .
-  FunctionDefinition<out tree> = CompoundStatement<out tree> .
-  FormalParameter              = Type [ identifier ] .
+  Params<out params>           = (. params = '' .)
+                                 "(" [ FormalParamList<out fparams> (. params += fparams .) ] ")" .
 
-  Type                         =   "CELINA"  [ "["ConstExpression"]" ] 
-                                 | "BUKVI" 
-                                 | "DROB"    [ "["ConstExpression"]" ]
-                                 | "PRAVDA"  [ "["ConstExpression"]" ].
+  FormalParamList<out fparams> = (. fparams = '' .) FormalParameter<out fp> (. fparams += fp .) 
+                                 {"," FormalParameter<out fp> (. fparams += ', ' + fp .)} .
+
+  FunctionDefinition<out tree> = CompoundStatement<out tree> .
+  FormalParameter<out fp>      = (. fp = '' .) Type<out type> (. fp = self.token.val .) identifier (. fp += ' ' + self.token.val .) .
+
+  Type<out type>               = (. type = '' .)  
+                                   "CELINA" (. type = self.token.val .) [ "["ConstExpression"]" ] 
+                                 | "BUKVI"  (. type = self.token.val .)
+                                 | "DROB"   (. type = self.token.val .) [ "["ConstExpression"]" ]
+                                 | "PRAVDA" (. type = self.token.val .) [ "["ConstExpression"]" ].
   
   Statement<out tree>          = (. tree = Node() .) 
                                  ( AssignmentExpression
@@ -51,11 +55,11 @@ PRODUCTIONS
                                  "{" {LocalDeclaration<out declar_tree> (. tree.AddChild(declar_tree) .) } 
                                  {Statement<out stat_tree> (. tree.AddChild(stat_tree) .) } "}" .
 
-  LocalDeclaration<out tree>   = Type identifier (. name = self.token.val; tree = Node(name) .)
-                                 ( "(" [ FormalParamList ] ")" (.  .)
+  LocalDeclaration<out tree>   = Type<out type> identifier (. name = type + " " + self.token.val ; tree = Node(name) .)
+                                 ( "(" [ FormalParamList<out fparams> ] ")" (.  .)
                                  | "=" Expression<out expr_tree>    
                                  (.
-                                    name += " = "
+                                    tree.Rename(name + ' =')
                                     tree.AddChild(expr_tree)
                                  .) ) ";" .
 
@@ -100,7 +104,7 @@ PRODUCTIONS
                                  MultExp<out mult_tree_2> 
                                  (. 
                                     tree.AddChild(Node(op))
-                                    tree.AddChild(mult_tree_1) 
+                                    tree.AddChild(mult_tree_2) 
                                  .) } .
 
   MultExp<out tree>            = (. tree = Node() .) 
