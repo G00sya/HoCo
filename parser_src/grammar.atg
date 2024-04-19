@@ -26,8 +26,8 @@ PRODUCTIONS
                                  (. type = ':' + self.token.val .)
                                  FunctionDefinition<out tree> 
                                  (. 
-                                    tree.PrintChildrens();
-                                    tree.OnExit()
+                                    print(name + type)
+                                    tree.PrintChildrens(0);
                                  .).
 
   Params                       = "(" [ FormalParamList ] ")" .
@@ -42,9 +42,9 @@ PRODUCTIONS
   
   Statement<out tree>          = (. tree = Node() .) 
                                  ( AssignmentExpression
-                                 | CompoundStatement<out cmpd_tree> (. tree.AddChild(cmpd_tree) .) 
+                                 | CompoundStatement<out cmpd_tree> (. tree = cmpd_tree .) 
                                  | IfStatement 
-                                 | ReturnStatement 
+                                 | ReturnStatement<out ret_tree> (. tree.Rename("VOZDAT"); tree.AddChild(ret_tree) .) 
                                  | WhileStatement ) .
 
   CompoundStatement<out tree>  = (. tree = Node() .)
@@ -68,34 +68,32 @@ PRODUCTIONS
                                     tree.AddChild(expr_tree) 
                                  .) } .
 
-  ReturnStatement              = "VOZDAT"  [ Expression<out tree> ] ";" .
+  ReturnStatement<out tree>    = "VOZDAT"  [ Expression<out tree> ] ";" .
   WhileStatement               = "DOKOLE" "(" Expression<out expr_tree> ")" Statement<out expr_tree> .
   IfStatement                  = "KOLI"   "(" Expression<out expr_tree> ")" Statement<out expr_tree> [ "else" Statement<out expr_tree> ] .
   
   AssignmentExpression         = Expression<out tree> ";" .
 
-  Conditional<out tree>        = LogORExp<out tree> .
+  Conditional<out tree>        = LogORExp<out tree>.
 
   LogORExp<out tree>           = LogANDExp<out tree> { "ALI" LogANDExp<out tree> } .
 
-  LogANDExp<out tree>          = (. tree = Node("LogAND") .) EqualExp<out eq_tree_1> (. tree.AddChild(eq_tree_1) .)
+  LogANDExp<out tree>          = (. tree = Node() .) EqualExp<out eq_tree_1> (. tree.AddChild(eq_tree_1) .)
                                  { "DA" EqualExp<out eq_tree_2> 
                                  (. tree.AddChild(eq_tree_2) .) } .
 
-  EqualExp<out tree>           = (. tree = Node("EqualExp") .) RelationExp<out rel_tree_1> (. tree.AddChild(rel_tree_1) .)
+  EqualExp<out tree>           = (. tree = Node() .) RelationExp<out rel_tree_1> (. tree.AddChild(rel_tree_1) .)
                                  { ( "==" ) RelationExp<out rel_tree_2> (. tree.AddChild(rel_tree_2) .) } .
 
-  RelationExp<out tree>        = (. tree = Node("RELATION") .) 
+  RelationExp<out tree>        = (. tree = Node() .) 
                                  AddExp<out sub_tree_1> (. tree.AddChild(sub_tree_1) .)
                                  { ( "<"  (. op  = '<' .)
                                  | ">"  (. op  = '>' .)
                                  | "<=" (. op  = '<=' .)
                                  | ">=" (. op  = '>=' .) ) AddExp<out sub_tree_2> 
-                                 (.
-                                    tree.AddChild(sub_tree_2)
-                                 .) }.
+                                 (. tree.AddChild(sub_tree_2) .) }.
 
-  AddExp<out tree>             = (. tree = Node("AddExp") .)
+  AddExp<out tree>             = (. tree = Node() .)
                                  MultExp<out mult_tree_1> (. tree.AddChild(mult_tree_1) .)   
                                  { ( "+" (. op = self.token.val .) 
                                  | "-" (. op = self.token.val .) ) 
@@ -105,29 +103,29 @@ PRODUCTIONS
                                     tree.AddChild(mult_tree_1) 
                                  .) } .
 
-  MultExp<out tree>            = (. tree = Node("MULT") .) 
+  MultExp<out tree>            = (. tree = Node() .) 
                                  CastExp<out cast_tree_1> (. tree.AddChild(cast_tree_1) .)   
                                  { ( "*"  (. op = "*" .) 
                                  | "/"  (. op = "/" .)
                                  | "%"  (. op = "%" .) ) 
                                  CastExp<out cast_tree_2> 
-                                 (. 
+                                 (.
                                     tree.AddChild(Node(op))
                                     tree.AddChild(cast_tree_2) 
                                  .) } .
 
-  CastExp<out tree>            = UnaryExp<out sub_tree> (. tree = sub_tree .) .
+  CastExp<out tree>            = UnaryExp<out urary_tree> (. tree = urary_tree .) .
 
-  UnaryExp<out tree>           = (. tree = Node("Unary") .)
-                                 PostFixExp<out s> (. tree.AddChild(s) .)
+  UnaryExp<out tree>           = (. tree = Node() .)
+                                 PostFixExp<out s> (. tree = s .)
                                  | UnaryOperator<out op> CastExp<out sub_tree>
-                                 (. 
+                                 (.
                                     tree.AddChild(Node(op))
                                     tree.AddChild(sub_tree) 
                                  .) .
 
-  PostFixExp<out tree>         = (. tree = Node("PostFix") .) 
-                                 Primary<out child> (. tree.AddChild(child) .)
+  PostFixExp<out tree>         = (. tree = Node() .) 
+                                 Primary<out child> (. tree.AddChild(child); .)
                                  { "[" Expression<out expression_tree> "]" (. tree.AddChild(expression_tree) .)
                                  | FunctionCall<out params_tree>           (. tree.AddChild(params_tree) .) }.
 
@@ -143,7 +141,7 @@ PRODUCTIONS
   FunctionCall<out res>        = (. res = Node(self.token.val) .)
                                  "(" [ ActualParameters<out expr> (. res.AddChild(expr).) ] ")" .
 
-  ActualParameters<out tree>   = (. tree = Node("PARAMS") .) 
+  ActualParameters<out tree>   = (. tree = Node() .) 
                                  Expression<out expr> (. tree.AddChild(expr) .) 
                                  { "," Expression<out expr2> (. tree.AddChild(expr2) .) } .
 

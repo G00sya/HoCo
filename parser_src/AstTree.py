@@ -6,15 +6,16 @@ class Node:
     def AddChild(self, child):
         self.prev.append(child)
 
-    def PrintChildrens(self):
+    def PrintChildrens(self, i):
+        if len(self.prev) and len(self.value): print(' ' * i, self.value)
+        elif len(self.value): print(' ' * i, "->", self.value)
         for c in self.prev:
-            if not c.PredCount():
-                print(c.value)
-            else:
-                c.PrintChildrens()
+            c.PrintChildrens(i + 1)
+        if len(self.prev) > 1 and len(self.value) > 1: print()
         
-    def PredCount(self):
+    def PrevCount(self):
         return len(self.prev)
-    
-def f():
-    print(1)
+
+    def Rename(self, new_val: str):
+        if (len(new_val)): self.value = new_val
+
