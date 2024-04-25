@@ -19,9 +19,9 @@ string                         = '"' { strings } '"' .
 IGNORE cr + lf + tab
 
 PRODUCTIONS
-  VeKrestKrest                 = { Defenition<out defTree> (. defTree.PrintChildrens(0) .)} .
+  VeKrestKrest<out tree>       = (. tree = Node() .){ Defenition<out defTree> (. defTree.PrintChildrens(0) .)} .
 
-  Defenition<out defTree>         = identifier (. name = self.token.val .) 
+  Defenition<out defTree>      = identifier (. name = self.token.val .) 
                                  Params<out params> "->" Type<out type>
                                  FunctionDefinition<out tree> 
                                  (. 
@@ -45,11 +45,11 @@ PRODUCTIONS
                                  | "PRAVDA" (. type = self.token.val .) [ "["ConstExpression"]" ].
   
   Statement<out tree>          = (. tree = Node() .) 
-                                 ( AssignmentExpression
+                                 ( AssignmentExpression<out assigm_tree> (. tree = assigm_tree .)
                                  | CompoundStatement<out cmpd_tree> (. tree = cmpd_tree .) 
-                                 | IfStatement 
+                                 | IfStatement<out if_tree> (. tree = if_tree .)
                                  | ReturnStatement<out ret_tree> (. tree.Rename("VOZDAT"); tree.AddChild(ret_tree) .) 
-                                 | WhileStatement ) .
+                                 | WhileStatement<out while_tree> ) .
 
   CompoundStatement<out tree>  = (. tree = Node() .)
                                  "{" {LocalDeclaration<out declar_tree> (. tree.AddChild(declar_tree) .) } 
@@ -68,15 +68,23 @@ PRODUCTIONS
                                  Conditional<out cond_tree> (. tree.AddChild(cond_tree) .)
                                  { AssignmentOperator<out op> Expression<out expr_tree> 
                                  (. 
-                                    tree.AddChild(op)
+                                    tree.AddChild(Node(op))
                                     tree.AddChild(expr_tree) 
                                  .) } .
 
   ReturnStatement<out tree>    = "VOZDAT"  [ Expression<out tree> ] ";" .
-  WhileStatement               = "DOKOLE" "(" Expression<out expr_tree> ")" Statement<out expr_tree> .
-  IfStatement                  = "KOLI"   "(" Expression<out expr_tree> ")" Statement<out expr_tree> [ "else" Statement<out expr_tree> ] .
+
+  WhileStatement<out tree>     = (. tree = Node() .) "DOKOLE" "(" Expression<out expr_tree> ")" Statement<out expr_tree> .
+
+  IfStatement<out tree>        = (. tree = Node('IF') .) 
+                                 "KOLI" "(" Expression<out expr_tree> ")" Statement<out state_tree> 
+                                 (. 
+                                    tree.AddChild(expr_tree)
+                                    tree.AddChild(state_tree)
+                                 .)
+                                 [ "else" Statement<out else_state_tree> ] .
   
-  AssignmentExpression         = Expression<out tree> ";" .
+  AssignmentExpression<out t>  = Expression<out t> ";" .
 
   Conditional<out tree>        = LogORExp<out tree>.
 

@@ -1,12 +1,13 @@
 class Node:
     def __init__(self, value=""):
         self.value = value
+        self.type = ''
         self.prev = []
     
     def AddChild(self, child):
         self.prev.append(child)
 
-    def PrintChildrens(self, i):
+    def PrintChildrens(self, i=0 ):
         if len(self.prev) and len(self.value): print(' ' * i, self.value)
         elif len(self.value): print(' ' * i, "->", self.value)
         for c in self.prev:
@@ -18,4 +19,9 @@ class Node:
 
     def Rename(self, new_val: str):
         if (len(new_val)): self.value = new_val
+
+class Tree:
+    def __init__():
+        self.head = Node()
+
 

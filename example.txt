@@ -12,3 +12,14 @@ f() -> CELINA {
 main(CELINA argc) -> CELINA {
     VOZDAT 0;
 }
+
+delt(CELINA a, CELINA b) -> CELINA {
+    CELINA d = 0;
+    KOLI (a > b) {
+        d = a - b;
+    }
+    KOLI (b > a) {
+        d = b - a;
+    }
+    VOZDAT d;
+}
