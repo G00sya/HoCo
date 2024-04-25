@@ -1,2 +1,3 @@
 PyQt5~=5.15.10
 QScintilla~=2.14.1
+jedy~=0.19.1
