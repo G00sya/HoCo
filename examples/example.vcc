@@ -1,0 +1,16 @@
+main() ->  CELINA {
+
+    CELINA A = 5; 
+
+    KOLI(A > 3);
+
+    
+    VOZDAT 0;
+}
+
+a(CELINA b = 10) -> {
+
+
+
+}
+
