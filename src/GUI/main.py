@@ -31,7 +31,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle(self.app_name)
         self.resize(1300, 900)
 
-        self.setStyleSheet(open(os.getcwd() + "/static/css/style.qss", "r").read())
+        self.setStyleSheet(open(os.getcwd() + "\\..\\..\\static\\css\\style.qss", "r").read())
 
         # alternative Consolas font
         self.window_font = QFont(
@@ -88,8 +88,11 @@ class MainWindow(QMainWindow):
         copy_action.triggered.connect(self.copy)
         # you can add more
 
-    def get_editor(self, path: Path = None, is_python_file=True) -> QsciScintilla:
-        editor = Editor(self, path=path, is_python_file=is_python_file)
+    def get_editor(self, path: Path = None, is_python_file=False, is_VeKrestKrest_file = True) -> QsciScintilla:
+        if is_VeKrestKrest_file:
+            editor = Editor(self, path=path, is_python_file=False, is_VeKrestKrest_file=True)
+        elif is_python_file:
+            editor = Editor(self, path=path, is_python_file=True, is_VeKrestKrest_file=False)
         return editor
 
     def is_binary(self, path):
@@ -107,8 +110,8 @@ class MainWindow(QMainWindow):
         if path.is_dir():
             return
 
-        # add whichever extentions you consider as python file
-        editor = self.get_editor(path, path.suffix in {".py", ".pyw"})
+        # add whichever extentions you consider as programming language file
+        editor = self.get_editor(path, path.suffix in {".py", ".pyw"}, path.suffix == ".vcc")
 
         if is_new_file:
             self.tab_view.addTab(editor, "untitled")
