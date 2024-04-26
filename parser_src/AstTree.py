@@ -1,28 +1,23 @@
 class Node:
-    def __init__(self, name='', value='', t=''):
-        self.name = name
+    def __init__(self, value='', t=''):
         self.value = value
         self.type = t
-        self.prev = []
+        self.childs = []
     
     def AddChild(self, child):
-        self.prev.append(child)
+        self.childs.append(child)
 
     def PrintChildrens(self, i=0 ):
-        if len(self.prev) and len(self.name): print(' ' * i, self.name)
-        elif len(self.name): print(' ' * i, "->", self.name)
-        for c in self.prev:
+        if len(self.childs) and len(self.value): print(' ' * i, self.value)
+        elif len(self.value): print(' ' * i, "->", self.value)
+        for c in self.childs:
             c.PrintChildrens(i + 1)
-        if len(self.prev) > 1 and len(self.name) > 1: print()
+        if len(self.childs) > 1 and len(self.value) > 1: print()
         
     def PrevCount(self):
-        return len(self.prev)
+        return len(self.childs)
 
     def Rename(self, name: str):
-        if (len(name)): self.name = name
-
-class Tree:
-    def __init__():
-        self.head = Node()
+        if (len(name)): self.value = name
 
 

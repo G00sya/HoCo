@@ -15,14 +15,16 @@ main(CELINA argc) -> CELINA {
 
 delt(CELINA a, CELINA b) -> CELINA {
     CELINA d = (3 + 1) * 2;
+    
     KOLI (a > b) {
         d = a - b;
-    }
-    KOLI (b > a) {
+    } OTNUD {
         d = b - a;
     }
+
     DOKOLE (1) {
         print(1);
     }
+
     VOZDAT d;
 }

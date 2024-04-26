@@ -19,13 +19,13 @@ string                         = '"' { strings } '"' .
 IGNORE cr + lf + tab
 
 PRODUCTIONS
-  VeKrestKrest<out tree>       = (. tree = Node(t='body') .) { Defenition<out defTree> (. defTree.PrintChildrens() .)} .
+  VeKrestKrest<out tree>       = (. tree = Node(t='body') .) { Defenition<out def_tree> (. tree.AddChild(def_tree); def_tree.PrintChildrens() .)} .
 
   Defenition<out defTree>      = identifier (. name = self.token.val .) 
                                  Params<out params> "->" Type<out type>
                                  FunctionDefinition<out tree> 
                                  (. 
-                                    defTree = Node(name=f'{name}({params})->{type}', t='def')
+                                    defTree = Node(value=f'{name}({params})->{type}', t='decl')
                                     defTree.AddChild(tree)
                                  .).
 
@@ -44,7 +44,7 @@ PRODUCTIONS
                                  | "DROB"   (. type = self.token.val .) [ "["ConstExpression"]" ]
                                  | "PRAVDA" (. type = self.token.val .) [ "["ConstExpression"]" ].
   
-  Statement<out tree>          = (. tree = Node(t='Statement') .) 
+  Statement<out tree>          = (. tree = Node(t='stat') .) 
                                  ( AssignmentExpression<out assigm_tree> (. tree = assigm_tree .)
                                  | CompoundStatement<out cmpd_tree> (. tree = cmpd_tree .) 
                                  | IfStatement<out if_tree> (. tree = if_tree .)
@@ -55,7 +55,8 @@ PRODUCTIONS
                                  "{" {LocalDeclaration<out declar_tree> (. tree.AddChild(declar_tree) .) } 
                                  {Statement<out stat_tree> (. tree.AddChild(stat_tree) .) } "}" .
 
-  LocalDeclaration<out tree>   = Type<out type> identifier (. name = type + " " + self.token.val ; tree = Node(name=name, t='decl') .)
+  LocalDeclaration<out tree>   = Type<out type> identifier 
+                                 (. name = type + " " + self.token.val ; tree = Node(value=name, t='decl') .)
                                  ( "(" [ FormalParamList<out fparams> ] ")" (.  .)
                                  | "=" Expression<out expr_tree>    
                                  (.
@@ -74,20 +75,25 @@ PRODUCTIONS
 
   ReturnStatement<out tree>    = "VOZDAT"  [ Expression<out tree> ] ";" .
 
-  WhileStatement<out tree>     = (. tree = Node(name='while', t='key') .) "DOKOLE" 
+  WhileStatement<out tree>     = (. tree = Node(value='while', t='key') .) "DOKOLE" 
                                  "(" Expression<out expr_tree> ")" Statement<out state_tree> 
                                  (. 
                                     tree.AddChild(expr_tree)
                                     tree.AddChild(state_tree) 
                                  .) .
 
-  IfStatement<out tree>        = (. tree = Node(name='IF', t='key') .) 
+  IfStatement<out tree>        = (. tree = Node(value='KOLI', t='key') .) 
                                  "KOLI" "(" Expression<out expr_tree> ")" Statement<out state_tree> 
                                  (. 
                                     tree.AddChild(expr_tree)
                                     tree.AddChild(state_tree)
                                  .)
-                                 [ "OTNUD" Statement<out else_state_tree> ] .
+                                 [ "OTNUD" Statement<out else_state_tree> 
+                                 (.
+                                    else_node = Node(value='OTNUD', t='key')
+                                    else_node.AddChild(else_state_tree)
+                                    tree.AddChild(else_node)
+                                 .) ] .
   
   AssignmentExpression<out t>  = Expression<out t> ";" .
 
@@ -96,7 +102,7 @@ PRODUCTIONS
   LogORExp<out tree>           = (. tree = Node(t='expr') .) LogANDExp<out and_tree_1> (. tree.AddChild(and_tree_1) .)
                                  { "ALI" LogANDExp<out and_tree_2> 
                                  (. 
-                                    tree.Rename(name='ALI') 
+                                    tree.Rename(value='ALI') 
                                     tree.AddChild(and_tree_2)
                                  .) } .
 
@@ -158,16 +164,16 @@ PRODUCTIONS
                                  { "[" Expression<out expression_tree> "]" (. tree.AddChild(expression_tree) .)
                                  | FunctionCall<out params_tree>           (. tree.AddChild(params_tree) .) }.
 
-  Primary<out prim>            = identifier   (. prim = Node(name=self.token.val, value=self.token.val, t='identifier') .) 
-                                 | string     (. prim = Node(name=self.token.val, value=self.token.val, t='string') .) 
-                                 | number     (. prim = Node(name=self.token.val, value=self.token.val, t='number') .) 
+  Primary<out prim>            = identifier   (. prim = Node(value=self.token.val, t='identifier') .) 
+                                 | string     (. prim = Node(value=self.token.val, t='string') .) 
+                                 | number     (. prim = Node(value=self.token.val, t='number') .) 
                                  | "(" Expression<out tree> ")" 
                                  (. 
-                                    prim = Node(name="()", t='expr') 
+                                    prim = Node(value="()", t='expr') 
                                     prim.AddChild(tree) 
                                  .) .
 
-  FunctionCall<out res>        = (. res = Node(name=self.token.val, t='call') .)
+  FunctionCall<out res>        = (. res = Node(value=self.token.val, t='call') .)
                                  "(" [ ActualParameters<out expr> (. res.AddChild(expr) .) ] ")" .
 
   ActualParameters<out tree>   = (. tree = Node() .) 
