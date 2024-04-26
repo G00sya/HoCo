@@ -19,13 +19,13 @@ string                         = '"' { strings } '"' .
 IGNORE cr + lf + tab
 
 PRODUCTIONS
-  VeKrestKrest<out tree>       = (. tree = Node(t='body') .) { Defenition<out defTree> (. defTree.PrintChildrens(0) .)} .
+  VeKrestKrest<out tree>       = (. tree = Node(t='body') .) { Defenition<out defTree> (. defTree.PrintChildrens() .)} .
 
   Defenition<out defTree>      = identifier (. name = self.token.val .) 
                                  Params<out params> "->" Type<out type>
                                  FunctionDefinition<out tree> 
                                  (. 
-                                    defTree = Node(f'{name}({params})->{type}')
+                                    defTree = Node(name=f'{name}({params})->{type}', t='def')
                                     defTree.AddChild(tree)
                                  .).
 
@@ -55,7 +55,7 @@ PRODUCTIONS
                                  "{" {LocalDeclaration<out declar_tree> (. tree.AddChild(declar_tree) .) } 
                                  {Statement<out stat_tree> (. tree.AddChild(stat_tree) .) } "}" .
 
-  LocalDeclaration<out tree>   = Type<out type> identifier (. name = type + " " + self.token.val ; tree = Node(name) .)
+  LocalDeclaration<out tree>   = Type<out type> identifier (. name = type + " " + self.token.val ; tree = Node(name=name, t='decl') .)
                                  ( "(" [ FormalParamList<out fparams> ] ")" (.  .)
                                  | "=" Expression<out expr_tree>    
                                  (.
@@ -87,17 +87,25 @@ PRODUCTIONS
                                     tree.AddChild(expr_tree)
                                     tree.AddChild(state_tree)
                                  .)
-                                 [ "else" Statement<out else_state_tree> ] .
+                                 [ "OTNUD" Statement<out else_state_tree> ] .
   
   AssignmentExpression<out t>  = Expression<out t> ";" .
 
   Conditional<out tree>        = LogORExp<out tree>.
 
-  LogORExp<out tree>           = LogANDExp<out tree> { "ALI" LogANDExp<out tree> } .
+  LogORExp<out tree>           = (. tree = Node(t='expr') .) LogANDExp<out and_tree_1> (. tree.AddChild(and_tree_1) .)
+                                 { "ALI" LogANDExp<out and_tree_2> 
+                                 (. 
+                                    tree.Rename(name='ALI') 
+                                    tree.AddChild(and_tree_2)
+                                 .) } .
 
   LogANDExp<out tree>          = (. tree = Node(t='expr') .) EqualExp<out eq_tree_1> (. tree.AddChild(eq_tree_1) .)
                                  { "DA" EqualExp<out eq_tree_2> 
-                                 (. tree.AddChild(eq_tree_2) .) } .
+                                 (. 
+                                    tree.Rename('DA')
+                                    tree.AddChild(eq_tree_2) 
+                                 .) } .
 
   EqualExp<out tree>           = (. tree = Node(t='expr') .) RelationExp<out rel_tree_1> (. tree.AddChild(rel_tree_1) .)
                                  { ( "==" ) RelationExp<out rel_tree_2> (. tree.AddChild(rel_tree_2) .) } .
