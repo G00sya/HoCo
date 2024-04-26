@@ -301,8 +301,8 @@ class KrestCustomLexer(NeutronLexer):
     def __init__(self, editor):
         super(KrestCustomLexer, self).__init__("Vekrestkrest", editor)
 
-        self.keywords = ["VOZDAT", "KOLI", "PRAVDA", "DOKOLE", "ALI"]
-        self.builtin_names = ["CELINA", "BUKVI"]
+        self.keywords = ["VOZDAT", "KOLI", "DOKOLE", "ALI", "DA", "OTNUD"]
+        self.builtin_names = ["CELINA", "BUKVI", "DROB", "PRAVDA"]
 
         self.setKeywords(self.keywords)
         self.setBuiltinNames(self.builtin_names)
@@ -347,30 +347,15 @@ class KrestCustomLexer(NeutronLexer):
                     string_flag = False
                 continue
 
-            if tok == "main":
-                name, ni = self.skip_spaces_peek()
-                brac_or_colon, _ = self.skip_spaces_peek(ni)
-                if name[0].isidentifier() and brac_or_colon[0] in (":", "("):
-                    self.setStyling(tok_len, self.KEYWORD)
-                    _ = self.next_tok(ni)
-                    self.setStyling(name[1] + 1, self.CLASSES)
-                    continue
-                else:
-                    self.setStyling(tok_len, self.KEYWORD)
-                    continue
-            elif tok in self.keywords_list:
-                self.setStyling(tok_len, self.KEYWORD)
-            elif tok.strip() == "." and self.peek_tok()[0].isidentifier():
-                self.setStyling(tok_len, self.DEFAULT)
-                curr_token = self.next_tok()
-                tok: str = curr_token[0]
-                tok_len: int = curr_token[1]
-                if self.peek_tok()[0] == "(":
+            if self.peek_tok()[0] == "(":
+                if tok not in self.keywords:
                     self.setStyling(tok_len, self.FUNCTIONS)
                 else:
-                    self.setStyling(tok_len, self.DEFAULT)
+                    self.setStyling(tok_len, self.KEYWORD)
                 continue
-            elif tok.isnumeric() or tok == 'self':
+            elif tok in self.keywords_list:
+                self.setStyling(tok_len, self.KEYWORD)
+            elif tok.isnumeric():
                 self.setStyling(tok_len, self.CONSTANTS)
             elif tok in ["(", ")", "{", "}", "[", "]"]:
                 self.setStyling(tok_len, self.BRACKETS)
@@ -380,6 +365,10 @@ class KrestCustomLexer(NeutronLexer):
             elif tok == "#":
                 self.setStyling(tok_len, self.COMMENTS)
                 comment_flag = True
+            elif tok == "-" and self.peek_tok()[0] == ">":
+                self.setStyling(tok_len + 1, self.STRING)
+                self.next_tok()
+                continue
             elif tok in self.builtin_names or tok in ['+', '-', '*', '/', '%', '=', '<', '>']:
                 self.setStyling(tok_len, self.TYPES)
             else:
