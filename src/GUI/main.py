@@ -1,5 +1,9 @@
 import os
 import ast
+
+import sys
+sys.path.append('C:\\Users\\User\\Desktop\\compiler\\HoCo\\src\\back\\AstTree')
+
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -13,6 +17,9 @@ from pathlib import Path
 from editor import Editor
 from file_manager import FileManager
 from ast_tree import fill_widget, fill_item
+from AstTree import Node, ASTree
+from Parser import *
+from Scanner import *
 
 
 class MainWindow(QMainWindow):
@@ -245,13 +252,31 @@ class MainWindow(QMainWindow):
         self.file_manager_layout.addWidget(self.file_manager)
         self.file_manager_frame.setLayout(self.file_manager_layout)
 
+        # Тестовое AST дерево
+        ast_tree = ASTree()
+        ast_tree.AddNode("Root")
+        ast_tree.AddNode("Child1")
+        ast_tree.AddNode("Child2")
+        ast_tree.AddNode("Grandchild1")
+        ast_tree.AddNode("Grandchild2")
 
-        # Parse some code into an AST
-        code = 'print("Hello world")'
-        parsed_code = ast.parse(code)
-        ast_dict = ast.dump(parsed_code, indent=4)
+        srcName = 'example.txt'
+        s = open(srcName, 'r', encoding='utf-8')
+        code = s.read()
+        scanner = Scanner(code)
+        parser = Parser()
+        ast_tree_code = parser.Parse(scanner)
+        tree_root = ast_tree.GetRoot()
         self.ast_tree = QTreeWidget()
-        fill_widget(self.ast_tree, ast_dict)
+
+        def fill_widget(tree_widget, ast):
+            item = QTreeWidgetItem(tree_widget)
+            item.setText(0, ast.value)
+
+            for child_node in ast.childs:
+                fill_widget(item, child_node)
+
+        fill_widget(self.ast_tree, tree_root)
 
         ##############################
         ###### SETUP WIDGETS ##########
