@@ -20,7 +20,8 @@ string                         = '"' { strings } '"' .
 IGNORE cr + lf + tab
 
 PRODUCTIONS
-  VeKrestKrest<out tree>       = (. main_tree = Node(t='body') .) { Defenition<out def_tree> (. main_tree.AddChild(def_tree) .)} 
+  VeKrestKrest<out tree>       = (. main_tree = Node(t='body') .) 
+                                 { Defenition<out def_tree> (. main_tree.AddChild(def_tree) .)} 
                                  (. 
                                     tree = ASTree()
                                     tree.AddNode(main_tree)
@@ -31,6 +32,7 @@ PRODUCTIONS
                                  FunctionDefinition<out tree> 
                                  (. 
                                     defTree = Node(value=f'{name}({params})->{type}', t='decl')
+                                    tree.Rename('body')
                                     defTree.AddChild(tree)
                                  .).
 
@@ -54,7 +56,7 @@ PRODUCTIONS
                                  | CompoundStatement<out cmpd_tree> (. tree = cmpd_tree .) 
                                  | IfStatement<out if_tree> (. tree = if_tree .)
                                  | ReturnStatement<out ret_tree> (. tree.Rename("VOZDAT"); tree.AddChild(ret_tree) .) 
-                                 | WhileStatement<out while_tree> (. tree.Rename("DOKOLE"); tree.AddChild(while_tree) .)) .
+                                 | WhileStatement<out while_tree> (.  tree = while_tree .)) .
 
   CompoundStatement<out tree>  = (. tree = Node(t='body') .)
                                  "{" {LocalDeclaration<out declar_tree> (. tree.AddChild(declar_tree) .) } 
@@ -81,7 +83,7 @@ PRODUCTIONS
 
   ReturnStatement<out tree>    = "VOZDAT"  [ Expression<out tree> ] ";" .
 
-  WhileStatement<out tree>     = (. tree = Node(value='while', t='key') .) "DOKOLE" 
+  WhileStatement<out tree>     = (. tree = Node(value='DOKOLE', t='key') .) "DOKOLE" 
                                  "(" Expression<out expr_tree> ")" Statement<out state_tree> 
                                  (. 
                                     expr_tree.Rename("condition")
@@ -127,8 +129,13 @@ PRODUCTIONS
                                     tree.AddChild(eq_tree_2) 
                                  .) } .
 
-  EqualExp<out tree>           = (. tree = Node(t='expr') .) RelationExp<out rel_tree_1> (. tree.AddChild(rel_tree_1) .)
-                                 { ( "==" ) RelationExp<out rel_tree_2> (. tree.AddChild(rel_tree_2) .) } .
+  EqualExp<out tree>           = RelationExp<out rel_tree_1> (. tree = (rel_tree_1) .)
+                                 { ( "==" ) RelationExp<out rel_tree_2> 
+                                 (. 
+                                    tree = Node(value='==', t='expr')
+                                    tree.AddChild(rel_tree_1)
+                                    tree.AddChild(rel_tree_2) 
+                                 .) } .
 
   RelationExp<out tree>        = AddExp<out sub_tree_1> (. tree = sub_tree_1 .)
                                  { ( "<"  (. op  = '<' .)
@@ -178,7 +185,7 @@ PRODUCTIONS
 
   PostFixExp<out tree>         = Primary<out child> (. tree = child; .)
                                  { "[" Expression<out expression_tree> "]" (. tree.AddChild(expression_tree) .)
-                                 | FunctionCall<out params_tree>           (. tree = params_tree .) }.
+                                 | FunctionCall<out f_call_tree>           (. tree = f_call_tree .) }.
 
   Primary<out prim>            = identifier   (. prim = Node(value=self.token.val, t='identifier') .) 
                                  | string     (. prim = Node(value=self.token.val, t='string') .) 
@@ -192,7 +199,7 @@ PRODUCTIONS
   FunctionCall<out res>        = (. res = Node(value=self.token.val, t='call') .)
                                  "(" [ ActualParameters<out expr> (. res.AddChild(expr) .) ] ")" .
 
-  ActualParameters<out tree>   = (. tree = Node() .) 
+  ActualParameters<out tree>   = (. tree = Node('params') .) 
                                  Expression<out expr> (. tree.AddChild(expr) .) 
                                  { "," Expression<out expr2> (. tree.AddChild(expr2) .) } .
 
