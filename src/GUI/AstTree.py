@@ -35,8 +35,14 @@ class ASTree:
     def __init__(self):
         self.root = None
 
-    def AddNode(self, value, t=''):
+    def AddNode(self, value='', t=''):
         new_node = Node(value, t)
+        if not self.root:
+            self.root = new_node
+        else:
+            self.root.AddChild(new_node)
+
+    def AddNode(self, new_node):
         if not self.root:
             self.root = new_node
         else:

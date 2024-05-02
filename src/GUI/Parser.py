@@ -26,7 +26,7 @@
 #Coco/R itself) does not fall under the GNU General Public License.
 #-------------------------------------------------------------------------*/
 
-from AstTree import Node
+from AstTree import Node, ASTree
 
 
 import sys
@@ -261,12 +261,12 @@ class Parser( object ):
          return self.StartOf( syFol )
 
    def VeKrestKrest( self ):
-      tree = Node(t='body') 
       while self.la.kind == 1:
          defTree = self.Defenition()
          #defTree.PrintChildrens()
-
-      return defTree
+      tree = ASTree()
+      tree.AddNode(defTree)
+      return defTree, tree
 
    def Defenition( self ):
       self.Expect(1)

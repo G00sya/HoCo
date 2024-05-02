@@ -253,30 +253,49 @@ class MainWindow(QMainWindow):
         self.file_manager_frame.setLayout(self.file_manager_layout)
 
         # Тестовое AST дерево
-        ast_tree = ASTree()
-        ast_tree.AddNode("Root")
-        ast_tree.AddNode("Child1")
-        ast_tree.AddNode("Child2")
-        ast_tree.AddNode("Grandchild1")
-        ast_tree.AddNode("Grandchild2")
+        # ast_tree = ASTree()
+        # ast_tree.AddNode("Root")
+        # ast_tree.AddNode("Child1")
+        # ast_tree.AddNode("Child2")
+        # ast_tree.AddNode("Grandchild1")
+        # ast_tree.AddNode("Grandchild2")
 
-        srcName = 'example.txt'
-        s = open(srcName, 'r', encoding='utf-8')
+        srcName_vcc = 'C:\\Users\\User\\Desktop\\compiler\\HoCo\\examples\\example.vcc'
+        srcName_txt = 'example.txt'
+        s = open(srcName_vcc, 'r', encoding='utf-8')
         code = s.read()
+        print(code)
         scanner = Scanner(code)
         parser = Parser()
-        ast_tree_code = parser.Parse(scanner)
-        tree_root = ast_tree.GetRoot()
+        ast_tree_code = parser.Parse(scanner)[1]
+        ast_tree_code.PrintTree()
+        tree_root = ast_tree_code.GetRoot()
+
+        # configuring body
         self.ast_tree = QTreeWidget()
+        self.ast_tree.setFrameShape(QFrame.StyledPanel)
+        self.ast_tree.setFrameShadow(QFrame.Plain)
+        self.ast_tree.setStyleSheet(f'''
+                   background-color: {self.side_bar_clr};
+                   color: #30d5c8;
+                   font: 12pt 'Fire Code'; 
+                   font-weight: bold;
+               ''')
 
-        def fill_widget(tree_widget, ast):
+        # configuring the header
+        self.ast_tree.setHeaderLabel("Ast tree")
+
+        def fill_widget(tree_widget, node, depth=0):
             item = QTreeWidgetItem(tree_widget)
-            item.setText(0, ast.value)
+            item.setText(0, node.value)
 
-            for child_node in ast.childs:
-                fill_widget(item, child_node)
+            for child_node in node.childs:
+                if child_node.value.strip(' ') != '':
+                    fill_widget(item, child_node, depth + 1)
+                else:
+                    fill_widget(item, child_node, depth)
 
-        fill_widget(self.ast_tree, tree_root)
+        fill_widget(self.ast_tree, tree_root, 0)
 
         ##############################
         ###### SETUP WIDGETS ##########
