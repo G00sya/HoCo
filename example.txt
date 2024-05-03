@@ -10,20 +10,22 @@ f() -> CELINA {
 }
 
 main(CELINA argc) -> CELINA {
+    CELINA i = 0;
     VOZDAT 0;
 }
 
 delt(CELINA a, CELINA b) -> CELINA {
-    CELINA d = (3 + 1) * 2;
-    KOLI (a > b) {
-        d = a - b;
-    } OTNUD {
-        d = b - a;
-    }
+    CELINA d = (3 + 1) * 2 / 2 * 2;
+    CELINA i = 0;
 
-    DOKOLE (1) {
+    DOKOLE (i < d) {
         print(1 + 1 + 1 - 1);
+        i = i + 1;
     }
 
-    VOZDAT d ALI 5;
+    KOLI (i > 1) {
+        CELINA DS  = 1;
+    }
+
+    VOZDAT 1 ALI 0 ALI 3;
 }
