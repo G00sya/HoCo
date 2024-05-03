@@ -26,7 +26,8 @@
 #Coco/R itself) does not fall under the GNU General Public License.
 #-------------------------------------------------------------------------*/
 
-from AstTree import Node, ASTree
+from AstTree import Node
+from AstTree import ASTree
 
 
 import sys
@@ -261,12 +262,15 @@ class Parser( object ):
          return self.StartOf( syFol )
 
    def VeKrestKrest( self ):
+      main_tree = Node(t='body') 
       while self.la.kind == 1:
-         defTree = self.Defenition()
-         #defTree.PrintChildrens()
+         def_tree = self.Defenition()
+         main_tree.AddChild(def_tree) 
+
       tree = ASTree()
-      tree.AddNode(defTree)
-      return defTree, tree
+      tree.AddNode(main_tree)
+      
+      return tree
 
    def Defenition( self ):
       self.Expect(1)
@@ -275,7 +279,8 @@ class Parser( object ):
       self.Expect(4)
       type = self.Type()
       tree = self.FunctionDefinition()
-      defTree = Node(value=f'{name}({params})->{type}', t='def')
+      defTree = Node(value=f'{name}({params})->{type}', t='decl')
+      tree.Rename('body')
       defTree.AddChild(tree)
       
       return defTree
@@ -360,7 +365,7 @@ class Parser( object ):
       tree = self.Expression()
 
    def Statement( self ):
-      tree = Node(t='Statement') 
+      tree = Node(t='stat') 
       if self.StartOf(3):
          assigm_tree = self.AssignmentExpression()
          tree = assigm_tree 
@@ -375,7 +380,7 @@ class Parser( object ):
          tree.Rename("VOZDAT"); tree.AddChild(ret_tree) 
       elif self.la.kind == 19:
          while_tree = self.WhileStatement()
-         tree.AddChild(while_tree) 
+         tree = while_tree 
       else:
          self.SynErr(41)
       return tree
@@ -386,18 +391,24 @@ class Parser( object ):
       return t
 
    def IfStatement( self ):
-      tree = Node(value='IF', t='key') 
+      tree = Node(value='KOLI', t='key') 
       self.Expect(20)
       self.Expect(5)
       expr_tree = self.Expression()
       self.Expect(6)
       state_tree = self.Statement()
+      expr_tree.Rename("condition")
       tree.AddChild(expr_tree)
+      state_tree.Rename("statements")
       tree.AddChild(state_tree)
       
       if (self.la.kind == 21):
          self.Get( )
          else_state_tree = self.Statement()
+         else_node = Node(value='OTNUD', t='key')
+         else_node.AddChild(else_state_tree)
+         tree.AddChild(else_node)
+         
       return tree
 
    def ReturnStatement( self ):
@@ -408,13 +419,15 @@ class Parser( object ):
       return tree
 
    def WhileStatement( self ):
-      tree = Node(value='while', t='key') 
+      tree = Node(value='DOKOLE', t='key') 
       self.Expect(19)
       self.Expect(5)
       expr_tree = self.Expression()
       self.Expect(6)
       state_tree = self.Statement()
+      expr_tree.Rename("condition")
       tree.AddChild(expr_tree)
+      state_tree.Rename("statements")
       tree.AddChild(state_tree) 
       
       return tree
@@ -440,12 +453,13 @@ class Parser( object ):
       return tree
 
    def Expression( self ):
-      tree = Node(t='expr') 
       cond_tree = self.Conditional()
-      tree.AddChild(cond_tree) 
+      tree = cond_tree 
       while self.StartOf(4):
          op = self.AssignmentOperator()
          expr_tree = self.Expression()
+         tree = Node(t='expr')
+         tree.AddChild(cond_tree)
          tree.Rename(op)
          tree.AddChild(expr_tree) 
          
@@ -477,12 +491,13 @@ class Parser( object ):
       return op
 
    def LogORExp( self ):
-      tree = Node(t='expr') 
       and_tree_1 = self.LogANDExp()
-      tree.AddChild(and_tree_1) 
+      tree = and_tree_1 
       while self.la.kind == 22:
          self.Get( )
          and_tree_2 = self.LogANDExp()
+         tree = Node(t='expr')
+         tree.AddChild(and_tree_1)
          tree.Rename(value='ALI') 
          tree.AddChild(and_tree_2)
          
@@ -490,12 +505,13 @@ class Parser( object ):
       return tree
 
    def LogANDExp( self ):
-      tree = Node(t='expr') 
       eq_tree_1 = self.EqualExp()
-      tree.AddChild(eq_tree_1) 
+      tree = eq_tree_1 
       while self.la.kind == 23:
          self.Get( )
          eq_tree_2 = self.EqualExp()
+         tree = Node(t='expr')
+         tree.AddChild(eq_tree_1)
          tree.Rename('DA')
          tree.AddChild(eq_tree_2) 
          
@@ -503,20 +519,21 @@ class Parser( object ):
       return tree
 
    def EqualExp( self ):
-      tree = Node(t='expr') 
       rel_tree_1 = self.RelationExp()
-      tree.AddChild(rel_tree_1) 
+      tree = (rel_tree_1) 
       while self.la.kind == 24:
          self.Get( )
          rel_tree_2 = self.RelationExp()
+         tree = Node(value='==', t='expr')
+         tree.AddChild(rel_tree_1)
          tree.AddChild(rel_tree_2) 
+         
 
       return tree
 
    def RelationExp( self ):
-      tree = Node(t='expr') 
       sub_tree_1 = self.AddExp()
-      tree.AddChild(sub_tree_1) 
+      tree = sub_tree_1 
       while self.StartOf(5):
          if self.la.kind == 25:
             self.Get( )
@@ -531,6 +548,8 @@ class Parser( object ):
             self.Get( )
             op  = '>=' 
          sub_tree_2 = self.AddExp()
+         tree = Node(t='expr')
+         tree.AddChild(sub_tree_1)
          tree.Rename(op)
          tree.AddChild(sub_tree_2) 
          
@@ -538,9 +557,8 @@ class Parser( object ):
       return tree
 
    def AddExp( self ):
-      tree = Node(t='expr') 
       mult_tree_1 = self.MultExp()
-      tree.AddChild(mult_tree_1) 
+      tree = mult_tree_1 
       while self.la.kind == 29 or self.la.kind == 30:
          if self.la.kind == 29:
             self.Get( )
@@ -549,6 +567,8 @@ class Parser( object ):
             self.Get( )
             op = self.token.val 
          mult_tree_2 = self.MultExp()
+         tree = Node(t='expr')
+         tree.AddChild(mult_tree_1)
          tree.Rename(op)
          tree.AddChild(mult_tree_2) 
          
@@ -556,9 +576,8 @@ class Parser( object ):
       return tree
 
    def MultExp( self ):
-      tree = Node(t='expr') 
       cast_tree_1 = self.CastExp()
-      tree.AddChild(cast_tree_1) 
+      tree =  cast_tree_1 
       while self.la.kind == 31 or self.la.kind == 32 or self.la.kind == 33:
          if self.la.kind == 31:
             self.Get( )
@@ -570,6 +589,8 @@ class Parser( object ):
             self.Get( )
             op = "%" 
          cast_tree_2 = self.CastExp()
+         tree = Node(t='expr')
+         tree.AddChild(cast_tree_1)
          tree.Rename(op)
          tree.AddChild(cast_tree_2) 
          
@@ -583,12 +604,12 @@ class Parser( object ):
 
    def UnaryExp( self ):
       if self.StartOf(6):
-         tree = Node(t='expr') 
          s = self.PostFixExp()
          tree = s 
       elif self.StartOf(7):
          op = self.UnaryOperator()
          cast_tree = self.CastExp()
+         tree = Node()
          tree.Rename(op)
          tree.AddChild(cast_tree) 
          
@@ -597,9 +618,8 @@ class Parser( object ):
       return tree
 
    def PostFixExp( self ):
-      tree = Node(t='expr') 
       child = self.Primary()
-      tree.AddChild(child); 
+      tree = child; 
       while self.la.kind == 5 or self.la.kind == 9:
          if self.la.kind == 9:
             self.Get( )
@@ -607,8 +627,8 @@ class Parser( object ):
             self.Expect(10)
             tree.AddChild(expression_tree) 
          else:
-            params_tree = self.FunctionCall()
-            tree.AddChild(params_tree) 
+            f_call_tree = self.FunctionCall()
+            tree = f_call_tree 
 
       return tree
 
@@ -660,7 +680,7 @@ class Parser( object ):
       return res
 
    def ActualParameters( self ):
-      tree = Node() 
+      tree = Node('params') 
       expr = self.Expression()
       tree.AddChild(expr) 
       while self.la.kind == 7:
@@ -676,11 +696,11 @@ class Parser( object ):
       self.scanner = scanner
       self.la = Token( )
       self.la.val = u''
-      self.Get()
+      self.Get( )
       ret = self.VeKrestKrest()
+      self.VeKrestKrest()
       self.Expect(0)
       return ret
-
 
 
    set = [
@@ -745,8 +765,5 @@ class Parser( object ):
       45 : "invalid UnaryOperator",
       46 : "invalid Primary",
       }
-
-   def parse(self, code):
-       pass
 
 

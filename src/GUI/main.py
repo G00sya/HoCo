@@ -267,7 +267,7 @@ class MainWindow(QMainWindow):
         print(code)
         scanner = Scanner(code)
         parser = Parser()
-        ast_tree_code = parser.Parse(scanner)[1]
+        ast_tree_code = parser.Parse(scanner)
         ast_tree_code.PrintTree()
         tree_root = ast_tree_code.GetRoot()
 
@@ -295,7 +295,7 @@ class MainWindow(QMainWindow):
                 else:
                     fill_widget(item, child_node, depth)
 
-        fill_widget(self.ast_tree, tree_root, 0)
+        fill_widget(self.ast_tree, tree_root)
 
         ##############################
         ###### SETUP WIDGETS ##########
