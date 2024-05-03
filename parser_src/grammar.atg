@@ -44,6 +44,7 @@ PRODUCTIONS
                                  {"," FormalParameter<out fp> (. fparams += ', ' + fp .)} .
 
   FunctionDefinition<out tree> = CompoundStatement<out tree> .
+  
   FormalParameter<out fp>      = (. fp = '' .) Type<out type> (. fp = self.token.val .) identifier (. fp += ' ' + self.token.val .) .
 
   Type<out type>               = (. type = '' .)  
@@ -90,25 +91,26 @@ PRODUCTIONS
   WhileStatement<out tree>     = (. tree = Node(value='DOKOLE', t='key') .) "DOKOLE" 
                                  "(" Expression<out expr_tree> ")" Statement<out state_tree> 
                                  (. 
-                                    expr_tree.Rename("condition")
-                                    tree.AddChild(expr_tree)
+                                    condition = Node("condition")
+                                    condition.AddChild(expr_tree)
+                                    tree.AddChild(condition)
                                     state_tree.Rename("statements")
-                                    tree.AddChild(state_tree) 
+                                    tree.AddChild(state_tree)
                                  .) .
 
   IfStatement<out tree>        = (. tree = Node(value='KOLI', t='key') .) 
                                  "KOLI" "(" Expression<out expr_tree> ")" Statement<out state_tree> 
                                  (. 
-                                    expr_tree.Rename("condition")
-                                    tree.AddChild(expr_tree)
+                                    condition = Node("condition")
+                                    condition.AddChild(expr_tree)
+                                    tree.AddChild(condition)
                                     state_tree.Rename("statements")
                                     tree.AddChild(state_tree)
                                  .)
                                  [ "OTNUD" Statement<out else_state_tree> 
                                  (.
-                                    else_node = Node(value='OTNUD', t='key')
-                                    else_node.AddChild(else_state_tree)
-                                    tree.AddChild(else_node)
+                                    else_state_tree.Rename("OTNUD")
+                                    tree.AddChild(else_state_tree)
                                  .) ] .
   
   AssignmentExpression<out t>  = Expression<out t> ";" .

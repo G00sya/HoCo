@@ -11,14 +11,13 @@ f() -> CELINA {
 }
 
 main(CELINA argc) -> CELINA {
-    CELINA i = 0;
     VOZDAT 0;
 }
 
 delt(CELINA a, CELINA b) -> CELINA {
     CELINA d = (3 + 1) * 2 / 2 * 2;
 
-    KOLI (b + a) {
+    KOLI (b > a) {
         d = b - a;
     } OTNUD {
         d = a - b;
