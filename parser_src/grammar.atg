@@ -25,6 +25,7 @@ PRODUCTIONS
                                  (. 
                                     tree = ASTree()
                                     tree.AddNode(main_tree)
+                                    tree.PrintTree()
                                  .).
 
   Defenition<out defTree>      = identifier (. name = self.token.val .) 
@@ -112,13 +113,14 @@ PRODUCTIONS
   Conditional<out tree>        = LogORExp<out tree>.
 
   LogORExp<out tree>           = LogANDExp<out and_tree_1> (. tree = and_tree_1 .)
-                                 { "ALI" LogANDExp<out and_tree_2> 
+                                 (. trees = [and_tree_1] .)
+                                 { "ALI" LogANDExp<out and_tree_2> (. trees.append(and_tree_2) .)}
                                  (. 
-                                    tree = Node(t='expr')
-                                    tree.AddChild(and_tree_1)
-                                    tree.Rename(value='ALI') 
-                                    tree.AddChild(and_tree_2)
-                                 .) } .
+                                    if (len(trees) > 1):
+                                       tree = Node(value='ALI', t='expr')
+                                       for tr in trees:
+                                          tree.AddChild(tr)
+                                 .) .
 
   LogANDExp<out tree>          = EqualExp<out eq_tree_1> (. tree = eq_tree_1 .)
                                  { "DA" EqualExp<out eq_tree_2> 
@@ -150,16 +152,27 @@ PRODUCTIONS
                                     tree.AddChild(sub_tree_2) 
                                  .) }.
 
-  AddExp<out tree>             = MultExp<out mult_tree_1> (. tree = mult_tree_1 .)   
+  AddExp<out tree>             = MultExp<out mult_tree_1> (. tree = mult_tree_1 .)
+                                 (. trees = [mult_tree_1]; ops = [] .) 
                                  { ( "+" (. op = self.token.val .) 
                                  | "-" (. op = self.token.val .) ) 
                                  MultExp<out mult_tree_2> 
+                                 (.
+                                    ops.append(op)
+                                    trees.append(mult_tree_2)
+                                 .) } 
                                  (. 
-                                    tree = Node(t='expr')
-                                    tree.AddChild(mult_tree_1)
-                                    tree.Rename(op)
-                                    tree.AddChild(mult_tree_2) 
-                                 .) } .
+                                    if len(trees) > 1:
+                                       tree = Node(ops[0])
+                                       tree.AddChild(trees[0])
+                                       last = tree
+                                       for i in range(1, len(trees) - 1):
+                                          cur = Node(ops[i])
+                                          cur.AddChild(trees[i])
+                                          last.AddChild(cur)
+                                          last = cur
+                                       last.AddChild(trees[-1])
+                                 .) .
 
   MultExp<out tree>            = CastExp<out cast_tree_1> (. tree =  cast_tree_1 .)   
                                  { ( "*"  (. op = "*" .) 
