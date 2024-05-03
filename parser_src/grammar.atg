@@ -128,34 +128,48 @@ PRODUCTIONS
                                  .) .
 
   LogANDExp<out tree>          = EqualExp<out eq_tree_1> (. tree = eq_tree_1 .)
-                                 { "DA" EqualExp<out eq_tree_2> 
+                                 (. trees = [eq_tree_1] .)
+                                 { "DA" EqualExp<out eq_tree_2> (. trees.append(eq_tree_2) .)} 
                                  (. 
-                                    tree = Node(t='expr')
-                                    tree.AddChild(eq_tree_1)
-                                    tree.Rename('DA')
-                                    tree.AddChild(eq_tree_2) 
-                                 .) } .
+                                    if (len(trees) > 1):
+                                       tree = Node(value='DA', t='expr')
+                                       for tr in trees:
+                                          tree.AddChild(tr)
+                                 .) .
 
   EqualExp<out tree>           = RelationExp<out rel_tree_1> (. tree = (rel_tree_1) .)
-                                 { ( "==" ) RelationExp<out rel_tree_2> 
+                                 (. trees = [rel_tree_1] .)
+                                 { ( "==" ) RelationExp<out rel_tree_2> (. trees.append(rel_tree_2) .)}  
                                  (. 
-                                    tree = Node(value='==', t='expr')
-                                    tree.AddChild(rel_tree_1)
-                                    tree.AddChild(rel_tree_2) 
-                                 .) } .
+                                    if (len(trees) > 1):
+                                       tree = Node(value='==', t='expr')
+                                       for tr in trees:
+                                          tree.AddChild(tr) 
+                                 .) .
 
   RelationExp<out tree>        = AddExp<out sub_tree_1> (. tree = sub_tree_1 .)
+                                 (. trees = [sub_tree_1]; ops = [] .) 
                                  { ( "<"  (. op  = '<' .)
                                  | ">"  (. op  = '>' .)
                                  | "<=" (. op  = '<=' .)
                                  | ">=" (. op  = '>=' .) ) 
                                  AddExp<out sub_tree_2> 
+                                 (.
+                                    ops.append(op)
+                                    trees.append(sub_tree_2)
+                                 .) }
                                  (. 
-                                    tree = Node(t='expr')
-                                    tree.AddChild(sub_tree_1)
-                                    tree.Rename(op)
-                                    tree.AddChild(sub_tree_2) 
-                                 .) }.
+                                    if len(trees) > 1:
+                                       tree = Node(ops[0])
+                                       tree.AddChild(trees[0])
+                                       last = tree
+                                       for i in range(1, len(trees) - 1):
+                                          cur = Node(ops[i])
+                                          cur.AddChild(trees[i])
+                                          last.AddChild(cur)
+                                          last = cur
+                                       last.AddChild(trees[-1]) 
+                                 .) .
 
   AddExp<out tree>             = MultExp<out mult_tree_1> (. tree = mult_tree_1 .)
                                  (. trees = [mult_tree_1]; ops = [] .) 
@@ -204,8 +218,7 @@ PRODUCTIONS
 
   CastExp<out tree>            = UnaryExp<out urary_tree> (. tree = urary_tree .) .
 
-  UnaryExp<out tree>           = PostFixExp<out s> (. tree = s .)
-                                 | UnaryOperator<out op> CastExp<out cast_tree>
+  UnaryExp<out tree>           = PostFixExp<out s> (. tree = s .) | UnaryOperator<out op> CastExp<out cast_tree>
                                  (.
                                     tree = Node()
                                     tree.Rename(op)

@@ -24,7 +24,7 @@ delt(CELINA a, CELINA b) -> CELINA {
     }
 
     CELINA i = 0;
-    DOKOLE (i < d) {
+    DOKOLE (i < d < d < d) {
         print(1 + 1 + 1 - 1);
         i += 1;
     }
