@@ -57,11 +57,14 @@ PRODUCTIONS
                                  | CompoundStatement<out cmpd_tree> (. tree = cmpd_tree .) 
                                  | IfStatement<out if_tree> (. tree = if_tree .)
                                  | ReturnStatement<out ret_tree> (. tree.Rename("VOZDAT"); tree.AddChild(ret_tree) .) 
-                                 | WhileStatement<out while_tree> (.  tree = while_tree .)) .
+                                 | WhileStatement<out while_tree> (.  tree = while_tree .) ) .
+
+  DeclrationOrStatement<out t> = (. t = Node() .)
+                                 ( LocalDeclaration<out declar_tree> (. t = declar_tree .) 
+                                 | Statement<out stat_tree> (. t = stat_tree .) ) .
 
   CompoundStatement<out tree>  = (. tree = Node(t='body') .)
-                                 "{" { LocalDeclaration<out declar_tree> (. tree.AddChild(declar_tree) .) } 
-                                 {Statement<out stat_tree> (. tree.AddChild(stat_tree) .) } "}" .
+                                 "{" {DeclrationOrStatement<out t> (. tree.AddChild(t) .)} "}" .
 
   LocalDeclaration<out tree>   = Type<out type> identifier 
                                  (. name = type + " " + self.token.val ; tree = Node(value=name, t='decl') .)
