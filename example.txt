@@ -29,5 +29,5 @@ delt(CELINA a, CELINA b) -> CELINA {
         i += 1;
     }
 
-    VOZDAT 1 ALI 0 ALI 3;
+    VOZDAT 1 ALI 0 ALI 3 DA 4 DA 1;
 }

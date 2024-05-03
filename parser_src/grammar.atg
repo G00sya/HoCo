@@ -1,5 +1,5 @@
-from AstTree import Node
-from AstTree import ASTree
+from AstTree import Node, ASTree, ConnectSame, ConnectWithOps
+
 
 COMPILER VeKrestKrest
 
@@ -25,7 +25,6 @@ PRODUCTIONS
                                  (. 
                                     tree = ASTree()
                                     tree.AddNode(main_tree)
-                                    tree.PrintTree()
                                  .).
 
   Defenition<out defTree>      = identifier (. name = self.token.val .) 
@@ -120,32 +119,17 @@ PRODUCTIONS
   LogORExp<out tree>           = LogANDExp<out and_tree_1> (. tree = and_tree_1 .)
                                  (. trees = [and_tree_1] .)
                                  { "ALI" LogANDExp<out and_tree_2> (. trees.append(and_tree_2) .)}
-                                 (. 
-                                    if (len(trees) > 1):
-                                       tree = Node(value='ALI', t='expr')
-                                       for tr in trees:
-                                          tree.AddChild(tr)
-                                 .) .
+                                 (. tree = ConnectSame(tree, trees, 'ALI') .) .
 
   LogANDExp<out tree>          = EqualExp<out eq_tree_1> (. tree = eq_tree_1 .)
                                  (. trees = [eq_tree_1] .)
                                  { "DA" EqualExp<out eq_tree_2> (. trees.append(eq_tree_2) .)} 
-                                 (. 
-                                    if (len(trees) > 1):
-                                       tree = Node(value='DA', t='expr')
-                                       for tr in trees:
-                                          tree.AddChild(tr)
-                                 .) .
+                                 (. tree = ConnectSame(tree, trees, 'DA') .) .
 
   EqualExp<out tree>           = RelationExp<out rel_tree_1> (. tree = (rel_tree_1) .)
                                  (. trees = [rel_tree_1] .)
                                  { ( "==" ) RelationExp<out rel_tree_2> (. trees.append(rel_tree_2) .)}  
-                                 (. 
-                                    if (len(trees) > 1):
-                                       tree = Node(value='==', t='expr')
-                                       for tr in trees:
-                                          tree.AddChild(tr) 
-                                 .) .
+                                 (. tree = ConnectSame(tree, trees, '==') .) .
 
   RelationExp<out tree>        = AddExp<out sub_tree_1> (. tree = sub_tree_1 .)
                                  (. trees = [sub_tree_1]; ops = [] .) 
@@ -157,19 +141,8 @@ PRODUCTIONS
                                  (.
                                     ops.append(op)
                                     trees.append(sub_tree_2)
-                                 .) }
-                                 (. 
-                                    if len(trees) > 1:
-                                       tree = Node(ops[0])
-                                       tree.AddChild(trees[0])
-                                       last = tree
-                                       for i in range(1, len(trees) - 1):
-                                          cur = Node(ops[i])
-                                          cur.AddChild(trees[i])
-                                          last.AddChild(cur)
-                                          last = cur
-                                       last.AddChild(trees[-1]) 
-                                 .) .
+                                 .) } 
+                                 (. tree = ConnectWithOps(tree, trees, ops) .) .
 
   AddExp<out tree>             = MultExp<out mult_tree_1> (. tree = mult_tree_1 .)
                                  (. trees = [mult_tree_1]; ops = [] .) 
@@ -179,19 +152,8 @@ PRODUCTIONS
                                  (.
                                     ops.append(op)
                                     trees.append(mult_tree_2)
-                                 .) } 
-                                 (. 
-                                    if len(trees) > 1:
-                                       tree = Node(ops[0])
-                                       tree.AddChild(trees[0])
-                                       last = tree
-                                       for i in range(1, len(trees) - 1):
-                                          cur = Node(ops[i])
-                                          cur.AddChild(trees[i])
-                                          last.AddChild(cur)
-                                          last = cur
-                                       last.AddChild(trees[-1])
-                                 .) .
+                                 .) }
+                                 (. tree = ConnectWithOps(tree, trees, ops) .) .
 
   MultExp<out tree>            = CastExp<out cast_tree_1> (. tree =  cast_tree_1 .) 
                                  (. trees = [cast_tree_1]; ops = [] .)   
@@ -203,18 +165,7 @@ PRODUCTIONS
                                     ops.append(op)
                                     trees.append(cast_tree_2)
                                  .) } 
-                                 (.
-                                    if len(trees) > 1:
-                                       tree = Node(ops[0])
-                                       tree.AddChild(trees[0])
-                                       last = tree
-                                       for i in range(1, len(trees) - 1):
-                                          cur = Node(ops[i])
-                                          cur.AddChild(trees[i])
-                                          last.AddChild(cur)
-                                          last = cur
-                                       last.AddChild(trees[-1]) 
-                                 .) .
+                                 (. tree = ConnectWithOps(tree, trees, ops) .) .
 
   CastExp<out tree>            = UnaryExp<out urary_tree> (. tree = urary_tree .) .
 
