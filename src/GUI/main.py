@@ -297,6 +297,19 @@ class MainWindow(QMainWindow):
 
         fill_widget(self.ast_tree, tree_root)
 
+        ast_dict = {}
+        # Функция для обработки наведения мыши на узел AST в QTreeWidget
+        # def highlight_code(item):
+        #     node_text = item.text(0)
+        #     if node_text in ast_tree:
+        #         pos = ast_tree[node_text]
+        #         cursor = Editor.textCursor()
+        #         cursor.setPosition(pos['start'])
+        #         cursor.setPosition(pos['end'], QTextCursor.KeepAnchor)
+        #         Editor.setTextCursor(cursor)
+        #         Editor.setStyleSheet("background-color: yellow")
+        #
+        # self.ast_tree.itemEntered.connect(highlight_code)
         ##############################
         ###### SETUP WIDGETS ##########
 
