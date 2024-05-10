@@ -20,18 +20,19 @@ string                         = '"' { strings } '"' .
 IGNORE cr + lf + tab
 
 PRODUCTIONS
-  VeKrestKrest<out tree>       = (. main_tree = Node(t='body') .) 
+  VeKrestKrest<out tree>       = (. main_tree = Node(value='VeKrestKrestProg', t='body') .) 
                                  { Defenition<out def_tree> (. main_tree.AddChild(def_tree) .)} 
                                  (. 
                                     tree = ASTree()
                                     tree.AddNode(main_tree)
                                  .).
 
-  Defenition<out defTree>      = identifier (. name = self.token.val .) 
-                                 Params<out params> "->" Type<out type>
+  Defenition<out defTree>      = (. start_pos = self.token.pos .) identifier (. name = self.token.val .) 
+                                 Params<out params> "->" Type<out type> (. end_pos = self.token.pos + len(type) .)
                                  FunctionDefinition<out tree> 
                                  (. 
-                                    defTree = Node(value=f'{name}({params})->{type}', t='decl')
+                                    print(start_pos, end_pos)
+                                    defTree = Node(value=f'{name}({params})->{type}', t='decl', start_pos=start_pos, end_pos=end_pos) 
                                     tree.Rename('body')
                                     defTree.AddChild(tree)
                                  .).
@@ -180,12 +181,13 @@ PRODUCTIONS
                                  { "[" Expression<out expression_tree> "]" (. tree.AddChild(expression_tree) .)
                                  | FunctionCall<out f_call_tree>           (. tree = f_call_tree .) }.
 
-  Primary<out prim>            = identifier   (. prim = Node(value=self.token.val, t='identifier') .) 
-                                 | string     (. prim = Node(value=self.token.val, t='string') .) 
-                                 | number     (. prim = Node(value=self.token.val, t='number') .) 
-                                 | "(" Expression<out tree> ")" 
+  Primary<out prim>            = identifier   
+                                 (. prim = Node(value=self.token.val, t='identifier', start_pos=self.token.pos, end_pos=(self.token.pos + len(self.token.val))) .) 
+                                 | string     (. prim = Node(value=self.token.val, t='string', start_pos=self.token.pos, end_pos=(self.token.pos + len(self.token.val))) .) 
+                                 | number     (. prim = Node(value=self.token.val, t='number', start_pos=self.token.pos, end_pos=(self.token.pos + len(self.token.val))) .) 
+                                 | "(" (. start_pos = self.token.pos .) Expression<out tree> ")" (. end_pos = self.token.pos .)
                                  (. 
-                                    prim = Node(value="()", t='expr') 
+                                    prim = Node(value="()", t='expr', start_pos=start_pos, end_pos=end_pos) 
                                     prim.AddChild(tree) 
                                  .) .
 

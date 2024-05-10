@@ -1,7 +1,9 @@
 class Node:
-    def __init__(self, value='', t=''):
+    def __init__(self, value='', t='', start_pos=-1, end_pos=-1):
         self.value = value
         self.type = t
+        self.start_pos = start_pos
+        self.end_pos = end_pos
         self.childs = []
     
 
@@ -23,6 +25,9 @@ class Node:
 
     def Rename(self, name: str):
         if (len(name)): self.value = name
+
+    def GetCoords(self):
+        return self.start_pos, self.end_pos
 
 
 class ASTree:
