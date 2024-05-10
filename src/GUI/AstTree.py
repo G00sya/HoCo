@@ -1,21 +1,13 @@
 class Node:
-    def __init__(self, value='', t=''):
+    def __init__(self, value='', t='', start_pos=-1, end_pos=-1):
         self.value = value
         self.type = t
+        self.start_pos = start_pos
+        self.end_pos = end_pos
         self.childs = []
 
     def AddChild(self, child):
         self.childs.append(child)
-
-    # def PrintChildrens(self, i=0):
-    #     if len(self.childs) and len(self.value):
-    #         print(' ' * i, self.value)
-    #     elif len(self.value):
-    #         print(' ' * i, "->", self.value)
-    #     for c in self.childs:
-    #         c.PrintChildrens(i + 1)
-    #     if len(self.childs) > 1 and len(self.value) > 1:
-    #         print()
 
     def Print(self, depth=0):
         indent = ' ' * depth
@@ -28,8 +20,15 @@ class Node:
         return len(self.childs)
 
     def Rename(self, name: str):
-        if len(name):
-            self.value = name
+        if (len(name)): self.value = name
+
+    def SetCoords(self, start_pos=-1, end_pos=-1):
+        self.start_pos = start_pos
+        self.end_pos = end_pos
+
+    def GetCoords(self):
+        return self.start_pos, self.end_pos
+
 
 class ASTree:
     def __init__(self):
@@ -54,3 +53,25 @@ class ASTree:
 
     def GetRoot(self):
         return self.root
+
+
+def ConnectSame(tree, trees, oper):
+    if (len(trees) > 1):
+        tree = Node(value=oper, t='expr')
+        for tr in trees:
+            tree.AddChild(tr)
+    return tree
+
+
+def ConnectWithOps(tree, trees, ops):
+    if len(trees) > 1:
+        tree = Node(ops[0])
+        tree.AddChild(trees[0])
+        last = tree
+        for i in range(1, len(trees) - 1):
+            cur = Node(ops[i])
+            cur.AddChild(trees[i])
+            last.AddChild(cur)
+            last = cur
+        last.AddChild(trees[-1])
+    return tree

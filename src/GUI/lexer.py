@@ -307,6 +307,19 @@ class KrestCustomLexer(NeutronLexer):
         self.setKeywords(self.keywords)
         self.setBuiltinNames(self.builtin_names)
 
+    def highlightRegion(self, start: int, end: int, highlight_style: int):
+        self.startStyling(start)
+        text = self.editor.text()[start:end]
+        self.generate_token(text)
+        self.setStyling(len(text), highlight_style)
+        while start < end:
+            curr_token = self.next_tok()
+            if curr_token is None:
+                break
+            tok, tok_len = curr_token
+            self.setStyling(tok_len, highlight_style)
+            start += tok_len
+
     def styleText(self, start: int, end: int) -> None:
         # 1. Start styling procedure
         self.startStyling(start)

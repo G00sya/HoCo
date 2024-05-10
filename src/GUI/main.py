@@ -2,6 +2,7 @@ import os
 import ast
 
 import sys
+
 sys.path.append('C:\\Users\\User\\Desktop\\compiler\\HoCo\\src\\back\\AstTree')
 
 from PyQt5.QtWidgets import *
@@ -26,12 +27,14 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super(QMainWindow, self).__init__()
         # add before init
+        self.tree_root = None
         self.side_bar_clr = "#282c34"
 
         self.init_ui()
 
         self.current_file = None
         self.current_side_bar = None
+        self.current_editor = None
 
     def init_ui(self):
         self.app_name = "PYQT EDITOR"
@@ -95,11 +98,13 @@ class MainWindow(QMainWindow):
         copy_action.triggered.connect(self.copy)
         # you can add more
 
-    def get_editor(self, path: Path = None, is_python_file=False, is_VeKrestKrest_file = True) -> QsciScintilla:
+    def get_editor(self, path: Path = None, is_python_file=False, is_VeKrestKrest_file=True) -> QsciScintilla:
         if is_VeKrestKrest_file:
             editor = Editor(self, path=path, is_python_file=False, is_VeKrestKrest_file=True)
+            self.current_editor = editor
         elif is_python_file:
             editor = Editor(self, path=path, is_python_file=True, is_VeKrestKrest_file=False)
+            self.current_editor = editor
         return editor
 
     def is_binary(self, path):
@@ -179,6 +184,33 @@ class MainWindow(QMainWindow):
         ''')
         return frame
 
+    def build_ast(self):
+        def clear_widget(tree_widget):
+            tree_widget.clear()
+
+        def fill_widget(tree_widget, node, depth=0):
+            item = QTreeWidgetItem(tree_widget)
+            item.setText(0, node.value)  # Используем поле name для отображения
+            item.setData(0, Qt.UserRole, node)
+
+            for child_node in node.childs:
+                fill_widget(item, child_node, depth + 1)
+
+            item.setExpanded(True)
+
+        s = open(self.srcName_vcc, 'r', encoding='utf-8')
+        code = s.read()
+        #print(code)
+        scanner = Scanner(code)
+        parser = Parser()
+        ast_tree_code = parser.Parse(scanner)
+        ast_tree_code.PrintTree()
+        self.tree_root = ast_tree_code.GetRoot()
+
+        clear_widget(self.ast_tree)
+
+        fill_widget(self.ast_tree, self.tree_root, 0)
+
     def set_up_body(self):
 
         # Body
@@ -252,64 +284,39 @@ class MainWindow(QMainWindow):
         self.file_manager_layout.addWidget(self.file_manager)
         self.file_manager_frame.setLayout(self.file_manager_layout)
 
-        # Тестовое AST дерево
-        # ast_tree = ASTree()
-        # ast_tree.AddNode("Root")
-        # ast_tree.AddNode("Child1")
-        # ast_tree.AddNode("Child2")
-        # ast_tree.AddNode("Grandchild1")
-        # ast_tree.AddNode("Grandchild2")
-
-        srcName_vcc = 'C:\\Users\\User\\Desktop\\compiler\\HoCo\\examples\\example.vcc'
-        srcName_txt = 'example.txt'
-        s = open(srcName_vcc, 'r', encoding='utf-8')
-        code = s.read()
-        print(code)
-        scanner = Scanner(code)
-        parser = Parser()
-        ast_tree_code = parser.Parse(scanner)
-        ast_tree_code.PrintTree()
-        tree_root = ast_tree_code.GetRoot()
-
-        # configuring body
+        # create ast
         self.ast_tree = QTreeWidget()
         self.ast_tree.setFrameShape(QFrame.StyledPanel)
         self.ast_tree.setFrameShadow(QFrame.Plain)
         self.ast_tree.setStyleSheet(f'''
-                   background-color: {self.side_bar_clr};
-                   color: #30d5c8;
-                   font: 12pt 'Fire Code'; 
-                   font-weight: bold;
-               ''')
+                          background-color: {self.side_bar_clr};
+                          color: #30d5c8;
+                          font: 12pt 'Fire Code'; 
+                          font-weight: bold;
+                      ''')
 
         # configuring the header
         self.ast_tree.setHeaderLabel("Ast tree")
 
-        def fill_widget(tree_widget, node, depth=0):
-            item = QTreeWidgetItem(tree_widget)
-            item.setText(0, node.value)
+        self.srcName_vcc = 'C:\\Users\\User\\Desktop\\compiler\\HoCo\\examples\\example.vcc'
+        self.build_ast()
 
-            for child_node in node.childs:
-                if child_node.value.strip(' ') != '':
-                    fill_widget(item, child_node, depth + 1)
-                else:
-                    fill_widget(item, child_node, depth)
+        def on_ast_node_selected(item):
+            path = Path("C:\\Users\\User\\Desktop\\compiler\\HoCo\\examples\\example.vcc")
+            is_open = 0
+            for i in range(self.tab_view.count()):
+                if self.tab_view.tabText(i) == path.name or self.tab_view.tabText(i) == "*" + path.name:
+                    is_open = 1
+            if not is_open:
+                self.set_new_tab(path)
+            node = item.data(0, Qt.UserRole)
+            start_pos = node.start_pos
+            end_pos = node.end_pos
+            # Выделение выбранной лексемы в редакторе
+            self.current_editor.highlightCode(start_pos, end_pos, 9)
 
-        fill_widget(self.ast_tree, tree_root)
+        self.ast_tree.itemClicked.connect(lambda item: on_ast_node_selected(item))
 
-        ast_dict = {}
-        # Функция для обработки наведения мыши на узел AST в QTreeWidget
-        # def highlight_code(item):
-        #     node_text = item.text(0)
-        #     if node_text in ast_tree:
-        #         pos = ast_tree[node_text]
-        #         cursor = Editor.textCursor()
-        #         cursor.setPosition(pos['start'])
-        #         cursor.setPosition(pos['end'], QTextCursor.KeepAnchor)
-        #         Editor.setTextCursor(cursor)
-        #         Editor.setStyleSheet("background-color: yellow")
-        #
-        # self.ast_tree.itemEntered.connect(highlight_code)
         ##############################
         ###### SETUP WIDGETS ##########
 
@@ -377,6 +384,7 @@ class MainWindow(QMainWindow):
 
         editor = self.tab_view.currentWidget()
         self.current_file.write_text(editor.text())
+        self.build_ast()
         self.statusBar().showMessage(f"Saved {self.current_file.name}", 2000)
         editor.current_file_changed = False
 
@@ -432,18 +440,3 @@ if __name__ == '__main__':
     app = QApplication([])
     window = MainWindow()
     sys.exit(app.exec())
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

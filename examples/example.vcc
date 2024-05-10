@@ -5,7 +5,7 @@ a(CELINA b) -> CELINA {
 f() -> CELINA {
     CELINA f1 = 3;
     CELINA b = func(5 + 1 * f1) + a(1);
-    BUKVI buk = "123";
+    BUKVI buk = "12";
     VOZDAT b * f1;
 }
 
@@ -23,6 +23,7 @@ delt(CELINA a, CELINA b) -> CELINA {
     }
     DOKOLE (1) {
         print(1);
+        print(3);
     }
     VOZDAT d;
 }
