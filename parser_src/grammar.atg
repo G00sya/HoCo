@@ -133,7 +133,8 @@ PRODUCTIONS
                                  { ( "==" ) RelationExp<out rel_tree_2> (. trees.append(rel_tree_2) .)}  
                                  (. tree = ConnectSame(tree, trees, '==') .) .
 
-  RelationExp<out tree>        = AddExp<out sub_tree_1> (. tree = sub_tree_1 .)
+  RelationExp<out tree>        = (. start_pos = self.token.pos .)
+                                 AddExp<out sub_tree_1> (. tree = sub_tree_1 .)
                                  (. trees = [sub_tree_1]; ops = [] .) 
                                  { ( "<"  (. op  = '<' .)
                                  | ">"  (. op  = '>' .)
@@ -144,9 +145,10 @@ PRODUCTIONS
                                     ops.append(op)
                                     trees.append(sub_tree_2)
                                  .) } 
-                                 (. tree = ConnectWithOps(tree, trees, ops) .) .
+                                 (. tree = ConnectWithOps(tree, trees, ops, start_pos, self.token.pos) .) .
 
-  AddExp<out tree>             = MultExp<out mult_tree_1> (. tree = mult_tree_1 .)
+  AddExp<out tree>             = (. start_pos = self.token.pos .)
+                                 MultExp<out mult_tree_1> (. tree = mult_tree_1 .)
                                  (. trees = [mult_tree_1]; ops = [] .) 
                                  { ( "+" (. op = self.token.val .) 
                                  | "-" (. op = self.token.val .) ) 
@@ -155,9 +157,10 @@ PRODUCTIONS
                                     ops.append(op)
                                     trees.append(mult_tree_2)
                                  .) }
-                                 (. tree = ConnectWithOps(tree, trees, ops) .) .
+                                 (. tree = ConnectWithOps(tree, trees, ops, start_pos, self.token.pos) .) .
 
-  MultExp<out tree>            = CastExp<out cast_tree_1> (. tree =  cast_tree_1 .) 
+  MultExp<out tree>            = (. start_pos = self.token.pos .)
+                                 CastExp<out cast_tree_1> (. tree =  cast_tree_1 .) 
                                  (. trees = [cast_tree_1]; ops = [] .)   
                                  { ( "*"  (. op = "*" .) 
                                  | "/"  (. op = "/" .)
@@ -167,7 +170,7 @@ PRODUCTIONS
                                     ops.append(op)
                                     trees.append(cast_tree_2)
                                  .) } 
-                                 (. tree = ConnectWithOps(tree, trees, ops) .) .
+                                 (. tree = ConnectWithOps(tree, trees, ops, start_pos, self.token.pos) .) .
 
   CastExp<out tree>            = UnaryExp<out urary_tree> (. tree = urary_tree .) .
 
@@ -183,9 +186,9 @@ PRODUCTIONS
                                  | FunctionCall<out f_call_tree>           (. tree = f_call_tree .) }.
 
   Primary<out prim>            = identifier   
-                                 (. prim = Node(value=self.token.val, t='identifier', start_pos=self.token.pos, end_pos=(self.token.pos + len(self.token.val))) .) 
-                                 | string     (. prim = Node(value=self.token.val, t='string', start_pos=self.token.pos, end_pos=(self.token.pos + len(self.token.val))) .) 
-                                 | number     (. prim = Node(value=self.token.val, t='number', start_pos=self.token.pos, end_pos=(self.token.pos + len(self.token.val))) .) 
+                                 (. prim = Node(value=self.token.val, t='identifier', start_pos=(self.token.pos - len(self.token.val)), end_pos=self.token.pos) .) 
+                                 | string     (. prim = Node(value=self.token.val, t='string', start_pos=(self.token.pos - len(self.token.val)), end_pos=self.token.pos) .) 
+                                 | number     (. prim = Node(value=self.token.val, t='number', start_pos=(self.token.pos - len(self.token.val)), end_pos=self.token.pos) .) 
                                  | "(" (. start_pos = self.token.pos .) Expression<out tree> ")" (. end_pos = self.token.pos .)
                                  (. 
                                     prim = Node(value="()", t='expr', start_pos=start_pos, end_pos=end_pos) 
