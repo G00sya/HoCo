@@ -1,5 +1,5 @@
 class Node:
-    def __init__(self, value='', t='', start_pos=0, end_pos=0):
+    def __init__(self, value='', t='DEFAULT', start_pos=0, end_pos=0):
         self.value = value
         self.type = t
         self.start_pos = start_pos
