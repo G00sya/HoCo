@@ -27,30 +27,37 @@ PRODUCTIONS
                                     tree.AddNode(main_tree)
                                  .).
 
-  Defenition<out defTree>      = (. start_pos = self.token.pos .) identifier (. name = self.token.val .) 
-                                 Params<out params> "->" Type<out type> (. end_pos = self.token.pos + len(type) .)
+  Defenition<out defTree>      = (. start_pos = self.token.pos .) 
+                                 identifier (. name = self.token.val; end_pos = self.token.pos .) 
+                                 Params<out params> "->" Type<out type>
                                  FunctionDefinition<out tree> 
                                  (. 
-                                    defTree = Node(value=f'{name}({params})->{type}', t='decl', start_pos=start_pos, end_pos=end_pos) 
+                                    defTree = Node(value=f'{name}', t='FUNCTIONS', start_pos=start_pos, end_pos=end_pos) 
                                     tree.Rename('body')
+                                    defTree.AddChild(params)
+                                    type.Rename('return ' + type.value)
+                                    defTree.AddChild(type)
                                     defTree.AddChild(tree)
-                                 .).
+                                 .) .
 
-  Params<out params>           = (. params = '' .)
-                                 "(" [ FormalParamList<out fparams> (. params += fparams .) ] ")" .
+  Params<out params>           = (. params = Node(value='params') .)
+                                 "(" [ FormalParamList<out fparams> (. params = fparams .) ] ")" .
 
-  FormalParamList<out fparams> = (. fparams = '' .) FormalParameter<out fp> (. fparams += fp .) 
-                                 {"," FormalParameter<out fp> (. fparams += ', ' + fp .)} .
+  FormalParamList<out fparams> = (. fparams = Node(value='params') .) 
+                                 FormalParameter<out fp> (. fparams.AddChild(fp) .) 
+                                 {"," FormalParameter<out fp> (. fparams.AddChild(fp) .) } .
 
   FunctionDefinition<out tree> = CompoundStatement<out tree> .
   
-  FormalParameter<out fp>      = (. fp = '' .) Type<out type> (. fp = self.token.val .) identifier (. fp += ' ' + self.token.val .) .
+  FormalParameter<out fp>      = Type<out type> (. start_pos = self.token.pos .) 
+                                 identifier (. fp = Node(value=self.token.val, t='KEYARG', start_pos=start_pos, end_pos=self.token.pos) .) .
 
-  Type<out type>               = (. type = '' .)  
-                                   "CELINA" (. type = self.token.val .) [ "["ConstExpression"]" ] 
-                                 | "BUKVI"  (. type = self.token.val .)
-                                 | "DROB"   (. type = self.token.val .) [ "["ConstExpression"]" ]
-                                 | "PRAVDA" (. type = self.token.val .) [ "["ConstExpression"]" ].
+  Type<out type>               = (. start_pos = self.token.pos .)
+                                 ( "CELINA" (. val=self.token.val .) [ "["ConstExpression"]" ] 
+                                 | "BUKVI"  (. val=self.token.val .)
+                                 | "DROB"   (. val=self.token.val .) [ "["ConstExpression"]" ]
+                                 | "PRAVDA" (. val=self.token.val .) [ "["ConstExpression"]" ] )
+                                 (. type = Node(value='type: ' + val, t='TYPES', start_pos=start_pos, end_pos=self.token.pos) .) .
   
   Statement<out tree>          = ( AssignmentExpression<out assigm_tree> (. tree = assigm_tree .)
                                  | CompoundStatement<out cmpd_tree> (. tree = cmpd_tree .) 
@@ -67,13 +74,16 @@ PRODUCTIONS
                                  (. end_pos = self.token.pos .) "}" 
                                  (. tree.SetCoords(start_pos, end_pos) .) .
 
-  LocalDeclaration<out tree>   = Type<out type> identifier 
-                                 (. name = type + " " + self.token.val ; tree = Node(value=name, t='decl') .)
+  LocalDeclaration<out tree>   = Type<out type> (. start_pos = self.token.pos .) identifier 
+                                 (. name = self.token.val ; tree = Node(value=name, t='KEYARG', start_pos=start_pos, end_pos=self) .)
                                  ( "(" [ FormalParamList<out fparams> ] ")" (.  .)
-                                 | "=" Expression<out expr_tree>    
+                                 | "=" Expression<out expr_tree> 
                                  (.
-                                    tree.Rename(name + ' =')
-                                    tree.AddChild(expr_tree)
+                                    tree.AddChild(type)
+                                    tree.Rename(name)
+                                    value = Node(value='value')
+                                    value.AddChild(expr_tree)
+                                    tree.AddChild(value)
                                  .) ) ";" .
 
   ConstExpression              = Expression<out tree> .
@@ -197,7 +207,7 @@ PRODUCTIONS
                                     prim.AddChild(tree) 
                                  .) .
 
-  FunctionCall<out res>        = (. res = Node(value=self.token.val, t='call') .)
+  FunctionCall<out res>        = (. res = Node(value=self.token.val, t='FUNCTIONS') .)
                                  "(" [ ActualParameters<out expr> (. res.AddChild(expr) .) ] ")" .
 
   ActualParameters<out tree>   = (. tree = Node('params') .) 
