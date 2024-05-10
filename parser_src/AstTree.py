@@ -26,6 +26,12 @@ class Node:
     def Rename(self, name: str):
         if (len(name)): self.value = name
 
+
+    def SetCoords(self, start_pos=-1, end_pos=-1):
+        self.start_pos = start_pos
+        self.end_pos = end_pos
+
+
     def GetCoords(self):
         return self.start_pos, self.end_pos
 

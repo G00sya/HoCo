@@ -31,7 +31,6 @@ PRODUCTIONS
                                  Params<out params> "->" Type<out type> (. end_pos = self.token.pos + len(type) .)
                                  FunctionDefinition<out tree> 
                                  (. 
-                                    print(start_pos, end_pos)
                                     defTree = Node(value=f'{name}({params})->{type}', t='decl', start_pos=start_pos, end_pos=end_pos) 
                                     tree.Rename('body')
                                     defTree.AddChild(tree)
@@ -65,7 +64,9 @@ PRODUCTIONS
                                  | Statement<out stat_tree> (. t = stat_tree .) ) .
 
   CompoundStatement<out tree>  = (. tree = Node(t='body') .)
-                                 "{" {DeclrationOrStatement<out t> (. tree.AddChild(t) .)} "}" .
+                                 "{"(.start_pos = self.token.pos.) 
+                                 {DeclrationOrStatement<out t> (. tree.AddChild(t) .)} 
+                                 "}" (. end_pos = self.token.pos; tree.SetCoords(start_pos, end_pos) .) .
 
   LocalDeclaration<out tree>   = Type<out type> identifier 
                                  (. name = type + " " + self.token.val ; tree = Node(value=name, t='decl') .)
