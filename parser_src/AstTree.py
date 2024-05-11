@@ -86,3 +86,4 @@ def ConnectWithOps(tree, trees, ops, start_pos, end_pos):
             last = cur
         last.AddChild(trees[-1]) 
     return tree
+    

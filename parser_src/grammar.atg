@@ -50,7 +50,11 @@ PRODUCTIONS
   FunctionDefinition<out tree> = CompoundStatement<out tree> .
   
   FormalParameter<out fp>      = Type<out type> (. start_pos = self.token.pos .) 
-                                 identifier (. fp = Node(value=self.token.val, t='KEYARG', start_pos=start_pos, end_pos=self.token.pos) .) .
+                                 identifier 
+                                 (. 
+                                    fp = Node(value=self.token.val, t='KEYARG', start_pos=start_pos, end_pos=self.token.pos) 
+                                    fp.AddChild(type)
+                                 .) .
 
   Type<out type>               = (. start_pos = self.token.pos .)
                                  ( "CELINA" (. val=self.token.val .) [ "["ConstExpression"]" ] 
