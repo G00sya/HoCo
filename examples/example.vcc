@@ -4,7 +4,7 @@ a(CELINA b) -> CELINA {
 
 f() -> CELINA {
     CELINA f1 = 3;
-    CELINA b = func(5 + 1 * f1) + a(1);
+    CELINA b = func(4 + 1 * f1) + a(1);
     BUKVI buk = "12";
     VOZDAT b * f1;
 }

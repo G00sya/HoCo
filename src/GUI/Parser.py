@@ -786,4 +786,3 @@ class Parser(object):
         47: "invalid Primary",
     }
 
-

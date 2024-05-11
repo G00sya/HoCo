@@ -10,6 +10,9 @@ from PyQt5.QtGui import QFont, QColor
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
+from Parser import *
+from Scanner import *
+
 # config type
 DefaultConfig = dict[str, str, tuple[str, int]]
 
@@ -157,13 +160,24 @@ class NeutronLexer(QsciLexerCustom):
 
         return ""
 
-    def generate_token(self, text):
+    def generate_token_regular(self, text):
         # 3. Tokenize the text 
         # ---------------------
         p = re.compile(r"[*]\/|\/[*]|\s+|\w+|\W")
 
         # 'token_list' is a list of tuples: (token_name, token_len), ex: '(class, 5)' 
         self.token_list = [(token, len(bytearray(token, "utf-8"))) for token in p.findall(text)]
+
+    def generate_token_coco(self, text):
+        # 3. Tokenize the text
+        # With AST
+        self.scaner = Scanner(text)
+        self.parser = Parser()
+        self.ast = self.parser.Parse(self.scaner)
+
+        self.token_list = []
+        self.ast.GetRoot().Pack(self.token_list)
+        self.token_list = self.token_list[1:]
 
     def next_tok(self, skip: int = None):
         if len(self.token_list) > 0:
@@ -214,7 +228,7 @@ class PyCustomLexer(NeutronLexer):
         text = self.editor.text()[start:end]
 
         # 3. Tokenize the text
-        self.generate_token(text)
+        self.generate_token_regular(text)
 
         # Flags
         string_flag = False
@@ -307,10 +321,10 @@ class KrestCustomLexer(NeutronLexer):
         self.setKeywords(self.keywords)
         self.setBuiltinNames(self.builtin_names)
 
-    def highlightRegion(self, start: int, end: int, highlight_style: int):
+    def highlightRegion_reg(self, start: int, end: int, highlight_style: int):
         self.startStyling(start)
         text = self.editor.text()[start:end]
-        self.generate_token(text)
+        self.generate_token_regular(text)
         self.setStyling(len(text), highlight_style)
         while start < end:
             curr_token = self.next_tok()
@@ -328,7 +342,7 @@ class KrestCustomLexer(NeutronLexer):
         text = self.editor.text()[start:end]
 
         # 3. Tokenize the text
-        self.generate_token(text)
+        self.generate_token_regular(text)
 
         # Flags
         string_flag = False
@@ -386,3 +400,28 @@ class KrestCustomLexer(NeutronLexer):
                 self.setStyling(tok_len, self.TYPES)
             else:
                 self.setStyling(tok_len, self.DEFAULT)
+
+
+class KrestCustomLexerCoco(NeutronLexer):
+    """Custom lexer for Vekrestkrest"""
+
+    def __init__(self, editor):
+        super(KrestCustomLexerCoco, self).__init__("Vekrestkrest", editor)
+
+        self.keywords = ["VOZDAT", "KOLI", "DOKOLE", "ALI", "DA", "OTNUD"]
+        self.builtin_names = ["CELINA", "BUKVI", "DROB", "PRAVDA"]
+
+        self.setKeywords(self.keywords)
+        self.setBuiltinNames(self.builtin_names)
+
+    def highlightRegion_reg(self, start: int, end: int, highlight_style: int):
+        self.startStyling(start)
+        text = self.editor.text()[start:end]
+        self.setStyling(len(text), highlight_style)
+
+    def styleText(self, start: int, end: int) -> None:
+        for element in self.token_list:
+            if element.start_pos != -1:
+                self.startStyling(element.start_pos)
+                self.setStyling(len(element.value), 1)
+

@@ -7,7 +7,7 @@ from PyQt5.Qsci import *
 import keyword
 import pkgutil
 from pathlib import Path
-from lexer import PyCustomLexer, KrestCustomLexer
+from lexer import PyCustomLexer, KrestCustomLexer, KrestCustomLexerCoco
 from autcompleter import AutoCompleter
 from typing import TYPE_CHECKING
 
@@ -81,7 +81,7 @@ class Editor(QsciScintilla):
 
             self.setLexer(self.pylexer)
         elif self.is_VeKrestKrest_file:
-            self.VeKrestKrestlexer = KrestCustomLexer(self)
+            self.VeKrestKrestlexer = KrestCustomLexerCoco(self)
             self.VeKrestKrestlexer.setDefaultFont(self.window_font)
 
             self.__api = QsciAPIs(self.VeKrestKrestlexer)
@@ -104,7 +104,8 @@ class Editor(QsciScintilla):
         # self.keyPressEvent = self.handle_editor_press
 
     def highlightCode(self, start_pos: int, end_pos: int, highlight_style: int):
-        self.VeKrestKrestlexer.highlightRegion(start_pos, end_pos, highlight_style)
+        self.VeKrestKrestlexer.highlightRegion_reg(start_pos, end_pos, highlight_style)
+        self.VeKrestKrestlexer.generate_token_coco(self.text())
 
 
     @property

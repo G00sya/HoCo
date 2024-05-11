@@ -190,7 +190,7 @@ class MainWindow(QMainWindow):
 
         def fill_widget(tree_widget, node, depth=0):
             item = QTreeWidgetItem(tree_widget)
-            item.setText(0, node.value)  # Используем поле name для отображения
+            item.setText(0, node.value)
             item.setData(0, Qt.UserRole, node)
 
             for child_node in node.childs:
@@ -200,7 +200,7 @@ class MainWindow(QMainWindow):
 
         s = open(self.srcName_vcc, 'r', encoding='utf-8')
         code = s.read()
-        #print(code)
+        self.code_len = len(code)
         scanner = Scanner(code)
         parser = Parser()
         ast_tree_code = parser.Parse(scanner)
@@ -313,6 +313,7 @@ class MainWindow(QMainWindow):
             start_pos = node.start_pos
             end_pos = node.end_pos
             # Выделение выбранной лексемы в редакторе
+            self.current_editor.VeKrestKrestlexer.styleText(0, self.code_len) # TODO
             self.current_editor.highlightCode(start_pos, end_pos, 9)
 
         self.ast_tree.itemClicked.connect(lambda item: on_ast_node_selected(item))

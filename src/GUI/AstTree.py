@@ -16,6 +16,12 @@ class Node:
         for child in self.childs:
             child.Print(depth + 1)
 
+    def Pack(self, array):
+        if self.value:
+            array.append(self)
+        for child in self.childs:
+            child.Pack(array)
+
     def PrevCount(self):
         return len(self.childs)
 

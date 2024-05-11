@@ -375,4 +375,3 @@ class Scanner(object):
 
     def ResetPeek(self):
         self.pt = self.t
-
