@@ -81,7 +81,7 @@ class Editor(QsciScintilla):
 
             self.setLexer(self.pylexer)
         elif self.is_VeKrestKrest_file:
-            self.VeKrestKrestlexer = KrestCustomLexerCoco(self)
+            self.VeKrestKrestlexer = KrestCustomLexer(self)
             self.VeKrestKrestlexer.setDefaultFont(self.window_font)
 
             self.__api = QsciAPIs(self.VeKrestKrestlexer)
@@ -105,7 +105,7 @@ class Editor(QsciScintilla):
 
     def highlightCode(self, start_pos: int, end_pos: int, highlight_style: int):
         self.VeKrestKrestlexer.highlightRegion_reg(start_pos, end_pos, highlight_style)
-        self.VeKrestKrestlexer.generate_token_coco(self.text())
+        self.VeKrestKrestlexer.generate_token_regular(self.text())
 
 
     @property
