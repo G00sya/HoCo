@@ -31,7 +31,11 @@ class MainWindow(QMainWindow):
         self.setWindowTitle(self.app_name)
         self.resize(1300, 900)
 
-        self.setStyleSheet(open(os.getcwd() + "\\..\\..\\static\\css\\style.qss", "r").read())
+        root_dir = os.getcwd()
+        full_path = os.path.join("static", "css", "style.qss")
+        absolute_path = os.path.join(root_dir, full_path)
+
+        self.setStyleSheet(open(absolute_path, "r").read())
 
         # alternative Consolas font
         self.window_font = QFont(
@@ -211,12 +215,13 @@ class MainWindow(QMainWindow):
         side_bar_layout.setSpacing(0)
         side_bar_layout.setAlignment(Qt.AlignTop | Qt.AlignCenter)
 
-        # setup labels
-        folder_label = self.get_side_bar_label(os.getcwd() + "/static/icons/folder-icon-blue.svg", "folder-icon")
-        side_bar_layout.addWidget(folder_label)
 
-        # search_label = self.get_side_bar_label("./src/icons/search-icon", "search-icon")
-        # side_bar_layout.addWidget(search_label)
+        root_dir = os.getcwd()
+        full_path = os.path.join("static", "icons", "folder-icon-blue.svg")
+        absolute_path = os.path.join(root_dir, full_path)
+
+        folder_label = self.get_side_bar_label(absolute_path, "folder-icon")
+        side_bar_layout.addWidget(folder_label)
 
         self.side_bar.setLayout(side_bar_layout)
 

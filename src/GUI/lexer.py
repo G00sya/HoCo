@@ -24,7 +24,10 @@ class NeutronLexer(QsciLexerCustom):
         self.language_name = language_name
         self.theme_json = None
         if theme is None:
-            self.theme = os.getcwd() + "\\..\\..\\static\\theme.json"
+            root_dir = os.getcwd()
+            full_path = os.path.join("static", "theme.json")
+            absolute_path = os.path.join(root_dir, full_path)
+            self.theme = absolute_path
         else:
             self.theme = theme
 
