@@ -1,0 +1,20 @@
+version: '3'
+
+services:
+  hoco:
+    build:
+      context: ""
+      dockerfile: Dockerfile
+    container_name: HoCo
+    network_mode: "host"
+    environment:
+      - DISPLAY
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - $HOME/.Xauthority:/root/.Xauthority
+      - ./src:/app
+    devices:
+      - /dev/dri
+    privileged: true
+    command:
+      python3 GUI/main.py
