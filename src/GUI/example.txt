@@ -4,8 +4,8 @@ a(CELINA b) -> CELINA {
 
 f() -> CELINA {
     CELINA f1 = 3;
-    CELINA b = func(4 + 1 * f1) + a(1);
-    BUKVI buk = "12";
+    CELINA b = func(5 + 1 * f1) + a(1);
+    BUKVI buk = "123";
     VOZDAT b * f1;
 }
 
@@ -14,7 +14,7 @@ main(CELINA argc) -> CELINA {
 }
 
 delt(CELINA a, CELINA b) -> CELINA {
-    CELINA d = (3 + 2) * 2;
+    CELINA d = (3 + 1) * 2;
     KOLI (a > b) {
         d = a - b;
     }
@@ -23,7 +23,6 @@ delt(CELINA a, CELINA b) -> CELINA {
     }
     DOKOLE (1) {
         print(1);
-        print(3);
     }
     VOZDAT d;
 }
