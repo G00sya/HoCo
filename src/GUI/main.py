@@ -93,6 +93,7 @@ class MainWindow(QMainWindow):
         # you can add more
 
     def get_editor(self, path: Path = None, is_python_file=False, is_VeKrestKrest_file = True) -> QsciScintilla:
+        editor = Editor(self, path=path, is_python_file=False, is_VeKrestKrest_file=False)
         if is_VeKrestKrest_file:
             editor = Editor(self, path=path, is_python_file=False, is_VeKrestKrest_file=True)
         elif is_python_file:
