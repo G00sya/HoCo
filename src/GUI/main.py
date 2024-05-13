@@ -3,7 +3,6 @@ import ast
 
 import sys
 
-sys.path.append('C:\\Users\\User\\Desktop\\compiler\\HoCo\\src\\back\\AstTree')
 
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
@@ -306,11 +305,17 @@ class MainWindow(QMainWindow):
         # configuring the header
         self.ast_tree.setHeaderLabel("Ast tree")
 
-        self.srcName_vcc = 'C:\\Users\\User\\Desktop\\compiler\\HoCo\\examples\\example.vcc'
+        root_dir = os.getcwd()
+        full_path = os.path.join("examples", "example.vcc")
+        self.srcName_vcc = os.path.join(root_dir, full_path)
         self.build_ast()
 
         def on_ast_node_selected(item):
-            path = Path("C:\\Users\\User\\Desktop\\compiler\\HoCo\\examples\\example.vcc")
+
+            root_dir = os.getcwd()
+            full_path = os.path.join("examples", "example.vcc")
+            path = os.path.join(root_dir, full_path)
+
             is_open = 0
             for i in range(self.tab_view.count()):
                 if self.tab_view.tabText(i) == path.name or self.tab_view.tabText(i) == "*" + path.name:
