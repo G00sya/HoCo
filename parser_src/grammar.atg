@@ -25,6 +25,7 @@ PRODUCTIONS
                                  (. 
                                     tree = ASTree()
                                     tree.AddNode(main_tree)
+                                    tree.PrintTree()
                                  .).
 
   Defenition<out defTree>      = (. start_pos = self.token.pos .) 
@@ -32,7 +33,7 @@ PRODUCTIONS
                                  Params<out params> "->" Type<out type>
                                  FunctionDefinition<out tree> 
                                  (. 
-                                    defTree = Node(value=f'{name}', t='FUNCTIONS', start_pos=start_pos, end_pos=end_pos) 
+                                    defTree = Node(value=name, t='FUNCTIONS', start_pos=start_pos, end_pos=end_pos) 
                                     tree.Rename('body')
                                     defTree.AddChild(params)
                                     type.Rename('return ' + type.value)
@@ -49,9 +50,9 @@ PRODUCTIONS
 
   FunctionDefinition<out tree> = CompoundStatement<out tree> .
   
-  FormalParameter<out fp>      = Type<out type> (. start_pos = self.token.pos .) 
-                                 identifier 
+  FormalParameter<out fp>      = Type<out type> identifier 
                                  (. 
+                                    start_pos = self.token.pos - len(self.token.val) 
                                     fp = Node(value=self.token.val, t='KEYARG', start_pos=start_pos, end_pos=self.token.pos) 
                                     fp.AddChild(type)
                                  .) .
@@ -61,7 +62,7 @@ PRODUCTIONS
                                  | "BUKVI"  (. val=self.token.val .)
                                  | "DROB"   (. val=self.token.val .) [ "["ConstExpression"]" ]
                                  | "PRAVDA" (. val=self.token.val .) [ "["ConstExpression"]" ] )
-                                 (. type = Node(value='type: ' + val, t='TYPES', start_pos=start_pos, end_pos=self.token.pos) .) .
+                                 (. type = Node(value='type: ' + val, t='TYPES', start_pos=start_pos, end_pos=(start_pos + len(val))) .) .
   
   Statement<out tree>          = ( AssignmentExpression<out assigm_tree> (. tree = assigm_tree .)
                                  | CompoundStatement<out cmpd_tree> (. tree = cmpd_tree .) 
@@ -73,13 +74,10 @@ PRODUCTIONS
                                  | Statement<out stat_tree> (. t = stat_tree .) ) .
 
   CompoundStatement<out tree>  = (. tree = Node(t='body') .)
-                                 "{"(.start_pos = self.token.pos.) 
-                                 {DeclrationOrStatement<out t> (. tree.AddChild(t) .)} 
-                                 (. end_pos = self.token.pos .) "}" 
-                                 (. tree.SetCoords(start_pos, end_pos) .) .
+                                 "{" {DeclrationOrStatement<out t> (. tree.AddChild(t) .)} "}" .
 
   LocalDeclaration<out tree>   = Type<out type> (. start_pos = self.token.pos .) identifier 
-                                 (. name = self.token.val ; tree = Node(value=name, t='KEYARG', start_pos=start_pos, end_pos=self) .)
+                                 (. name = self.token.val; tree = Node(value=name, t='KEYARG', start_pos=start_pos, end_pos=self.token.pos) .)
                                  ( "(" [ FormalParamList<out fparams> ] ")" (.  .)
                                  | "=" Expression<out expr_tree> 
                                  (.
@@ -92,13 +90,13 @@ PRODUCTIONS
 
   ConstExpression              = Expression<out tree> .
   Expression<out tree>         = Conditional<out cond_tree> (. tree = cond_tree .)
-                                 { AssignmentOperator<out op> Expression<out expr_tree> 
+                                 [ AssignmentOperator<out op> (. end_pos = self.token.pos .) Expression<out expr_tree> 
                                  (. 
-                                    tree = Node(t='expr')
+                                    start_pos = end_pos - len(op)
+                                    tree = Node(value=op, t='expr', start_pos=start_pos, end_pos=end_pos)
                                     tree.AddChild(cond_tree)
-                                    tree.Rename(op)
                                     tree.AddChild(expr_tree) 
-                                 .) } .
+                                 .) ] .
 
   ReturnStatement<out tree>    = (. start_pos = self.token.pos .)
                                  "VOZDAT" (. tree = Node(value="VOZDAT", t='KEYWORD', start_pos=start_pos, end_pos=self.token.pos) .) 
@@ -136,65 +134,68 @@ PRODUCTIONS
   Conditional<out tree>        = LogORExp<out tree>.
 
   LogORExp<out tree>           = LogANDExp<out and_tree_1> (. tree = and_tree_1 .)
-                                 (. trees = [and_tree_1] .)
-                                 { "ALI" LogANDExp<out and_tree_2> (. trees.append(and_tree_2) .)}
-                                 (. tree = ConnectSame(tree, trees, 'ALI') .) .
+                                 (. trees = [and_tree_1]; start_pos = 0 .)
+                                 { (. start_pos = self.token.pos .) "ALI" LogANDExp<out and_tree_2> (. trees.append(and_tree_2) .)}
+                                 (. tree = ConnectSame(tree, trees, 'ALI', start_pos) .) .
 
   LogANDExp<out tree>          = EqualExp<out eq_tree_1> (. tree = eq_tree_1 .)
-                                 (. trees = [eq_tree_1] .)
-                                 { "DA" EqualExp<out eq_tree_2> (. trees.append(eq_tree_2) .)} 
-                                 (. tree = ConnectSame(tree, trees, 'DA') .) .
+                                 (. trees = [eq_tree_1]; start_pos = 0 .)
+                                 { (. start_pos = self.token.pos .) "DA" EqualExp<out eq_tree_2> (. trees.append(eq_tree_2) .)} 
+                                 (. tree = ConnectSame(tree, trees, 'DA', start_pos) .) .
 
-  EqualExp<out tree>           = RelationExp<out rel_tree_1> (. tree = (rel_tree_1) .)
-                                 (. trees = [rel_tree_1] .)
-                                 { ( "==" ) RelationExp<out rel_tree_2> (. trees.append(rel_tree_2) .)}  
-                                 (. tree = ConnectSame(tree, trees, '==') .) .
+  EqualExp<out tree>           = RelationExp<out rel_tree_1> (. tree = rel_tree_1 .)
+                                 (. trees = [rel_tree_1]; start_pos = 0 .)
+                                 { (. start_pos = self.token.pos .) "=="  RelationExp<out rel_tree_2> (. trees.append(rel_tree_2) .)}  
+                                 (. tree = ConnectSame(tree, trees, '==', start_pos) .) .
 
-  RelationExp<out tree>        = (. start_pos = self.token.pos .)
-                                 AddExp<out sub_tree_1> (. tree = sub_tree_1 .)
-                                 (. trees = [sub_tree_1]; ops = [] .) 
+  RelationExp<out tree>        = AddExp<out sub_tree_1> (. tree = sub_tree_1 .)
+                                 (. trees = [sub_tree_1]; ops = []; positions = [] .) 
                                  { ( "<"  (. op  = '<' .)
                                  | ">"  (. op  = '>' .)
                                  | "<=" (. op  = '<=' .)
                                  | ">=" (. op  = '>=' .) ) 
+                                 (. end_pos = self.token.pos .)
                                  AddExp<out sub_tree_2> 
                                  (.
                                     ops.append(op)
+                                    positions.append((end_pos - 1, end_pos))
                                     trees.append(sub_tree_2)
                                  .) } 
-                                 (. tree = ConnectWithOps(tree, trees, ops, start_pos, self.token.pos) .) .
+                                 (. tree = ConnectWithOps(tree, trees, ops, positions) .) .
 
-  AddExp<out tree>             = (. start_pos = self.token.pos .)
-                                 MultExp<out mult_tree_1> (. tree = mult_tree_1 .)
-                                 (. trees = [mult_tree_1]; ops = [] .) 
+  AddExp<out tree>             = MultExp<out mult_tree_1> (. tree = mult_tree_1 .)
+                                 (. trees = [mult_tree_1]; ops = []; positions = [] .) 
                                  { ( "+" (. op = self.token.val .) 
-                                 | "-" (. op = self.token.val .) ) 
+                                 | "-" (. op = self.token.val .) )
+                                 (. end_pos = self.token.pos .) 
                                  MultExp<out mult_tree_2> 
                                  (.
                                     ops.append(op)
+                                    positions.append((end_pos - 1, end_pos))
                                     trees.append(mult_tree_2)
                                  .) }
-                                 (. tree = ConnectWithOps(tree, trees, ops, start_pos, self.token.pos) .) .
+                                 (. tree = ConnectWithOps(tree, trees, ops, positions) .) .
 
-  MultExp<out tree>            = (. start_pos = self.token.pos .)
-                                 CastExp<out cast_tree_1> (. tree =  cast_tree_1 .) 
-                                 (. trees = [cast_tree_1]; ops = [] .)   
+  MultExp<out tree>            = CastExp<out cast_tree_1> (. tree =  cast_tree_1 .) 
+                                 (. trees = [cast_tree_1]; ops = []; positions = [] .) 
                                  { ( "*"  (. op = "*" .) 
                                  | "/"  (. op = "/" .)
                                  | "%"  (. op = "%" .) ) 
+                                 (. end_pos = self.token.pos .)
                                  CastExp<out cast_tree_2>
                                  (.
                                     ops.append(op)
+                                    positions.append((end_pos - 1, end_pos))
                                     trees.append(cast_tree_2)
                                  .) } 
-                                 (. tree = ConnectWithOps(tree, trees, ops, start_pos, self.token.pos) .) .
+                                 (. tree = ConnectWithOps(tree, trees, ops, positions) .) .
 
-  CastExp<out tree>            = UnaryExp<out urary_tree> (. tree = urary_tree .) .
+  CastExp<out tree>            = UnaryExp<out unary_tree> (. tree = unary_tree .) .
 
-  UnaryExp<out tree>           = PostFixExp<out s> (. tree = s .) | UnaryOperator<out op> CastExp<out cast_tree>
+  UnaryExp<out tree>           = PostFixExp<out s> (. tree = s .) 
+                                 | (. start_pos = self.toke.pos .)UnaryOperator<out op> CastExp<out cast_tree>
                                  (.
-                                    tree = Node()
-                                    tree.Rename(op)
+                                    tree = Node(value=op, start_pos=start_pos, end_pos=(start_pos + len(op)))
                                     tree.AddChild(cast_tree) 
                                  .) .
 
@@ -211,7 +212,7 @@ PRODUCTIONS
                                     prim.AddChild(tree) 
                                  .) .
 
-  FunctionCall<out res>        = (. res = Node(value=self.token.val, t='FUNCTIONS') .)
+  FunctionCall<out res>        = (. res = Node(value=self.token.val, t='FUNCTIONS', start_pos=(self.token.pos-len(self.token.val)), end_pos=self.token.pos) .)
                                  "(" [ ActualParameters<out expr> (. res.AddChild(expr) .) ] ")" .
 
   ActualParameters<out tree>   = (. tree = Node('params') .) 

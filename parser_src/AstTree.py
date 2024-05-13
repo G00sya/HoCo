@@ -65,22 +65,22 @@ class ASTree:
         return self.root
 
 
-def ConnectSame(tree, trees, oper):
+def ConnectSame(tree, trees, operation, pos):
     if (len(trees) > 1):
-        tree = Node(value=oper, t='expr')
+        tree = Node(value=operation, t='DEFAULT', start_pos=pos, end_pos=(pos + len(operation)))
         for tr in trees:
             tree.AddChild(tr)
     return tree
 
 
-def ConnectWithOps(tree, trees, ops, start_pos, end_pos):
+def ConnectWithOps(tree, trees, ops, postions):
     if len(trees) > 1:
-        tree = Node(ops[0], start_pos=start_pos, end_pos=end_pos)
+        tree = Node(ops[0], 'DEFAULT', start_pos=postions[0][0], end_pos=postions[0][1])
         tree.AddChild(trees[0])
         last = tree
         for i in range(1, len(trees) - 1):
             right_pos, _ = last.GetCoords()
-            cur = Node(ops[i], start_pos=right_pos, end_pos=end_pos)
+            cur = Node(ops[i], 'DEFAULT', *postions[i])
             cur.AddChild(trees[i])
             last.AddChild(cur)
             last = cur
