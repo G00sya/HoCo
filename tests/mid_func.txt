@@ -1,0 +1,6 @@
+main(CELINA a, BUKVI b)->BUKVI {
+    KOLI (a > 10) {
+        b = "123";
+    }
+    VOZDAT b + "321";
+}
