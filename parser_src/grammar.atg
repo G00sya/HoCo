@@ -58,7 +58,7 @@ PRODUCTIONS
                                  | "BUKVI"  (. val = self.token.val; end_pos = self.token.pos .)
                                  | "DROB"   (. val = self.token.val; end_pos = self.token.pos .) [ "["ConstExpression"]" ]
                                  | "PRAVDA" (. val = self.token.val; end_pos = self.token.pos .) [ "["ConstExpression"]" ] )
-                                 (. type = Node(value='type: ' + val, t='TYPES', start_pos=end_pos - 1, end_pos=end_pos + len(val)) .) .
+                                 (. type = Node(value='type: ' + val, t='TYPES', start_pos=end_pos - 1, end_pos=end_pos + len(val) - 1) .) .
   
   Statement<out tree>          = ( AssignmentExpression<out assigm_tree> (. tree = assigm_tree .)
                                  | CompoundStatement<out cmpd_tree> (. tree = cmpd_tree .) 
