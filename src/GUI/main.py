@@ -300,10 +300,12 @@ class MainWindow(QMainWindow):
         self.file_manager_layout.addWidget(self.file_manager)
         self.file_manager_frame.setLayout(self.file_manager_layout)
 
-        # create ast
+        ##############################
+        ###### AST TREE ##############
         self.ast_tree = QTreeWidget()
         self.ast_tree.setFrameShape(QFrame.StyledPanel)
         self.ast_tree.setFrameShadow(QFrame.Plain)
+        # self.ast_tree.setMaximumWidth(700)
         self.ast_tree.setStyleSheet(f'''
                           background-color: {self.side_bar_clr};
                           color: #abb2bf;
@@ -340,7 +342,7 @@ class MainWindow(QMainWindow):
 
         self.ast_tree.itemClicked.connect(lambda item: on_ast_node_selected(item))
 
-        ##############################
+        ###############################
         ###### SETUP WIDGETS ##########
 
         # add tree view and tab view
