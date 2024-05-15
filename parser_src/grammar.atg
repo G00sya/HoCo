@@ -16,24 +16,22 @@ TOKENS
 identifier                     = letter {letter | digit | "_"}.
 number                         = digit {digit} .
 string                         = '"' { strings } '"' .
- 
-IGNORE cr + lf + tab
+
+IGNORE cr + lf + tab 
 
 PRODUCTIONS
   VeKrestKrest<out tree>       = (. main_tree = Node(value='VeKrestKrestProg', t='body') .) 
-                                 { Defenition<out def_tree> (. main_tree.AddChild(def_tree) .)} 
+                                 { Defenition<out def_tree> (. main_tree.AddChild(def_tree); #AllInfo(def_tree, "../example.txt") .)} 
                                  (. 
                                     tree = ASTree()
                                     tree.AddNode(main_tree)
-                                    tree.PrintTree()
                                  .).
 
-  Defenition<out defTree>      = (. start_pos = self.token.pos .) 
-                                 identifier (. name = self.token.val; end_pos = self.token.pos .) 
+  Defenition<out defTree>      = identifier (. name = self.token.val; name_pos = self.token.pos .) 
                                  Params<out params> "->" Type<out type>
                                  FunctionDefinition<out tree> 
                                  (. 
-                                    defTree = Node(value=name, t='FUNCTIONS', start_pos=start_pos, end_pos=end_pos) 
+                                    defTree = Node(value=name, t='FUNCTIONS', start_pos=name_pos - 1, end_pos=name_pos + len(name)) 
                                     tree.Rename('body')
                                     defTree.AddChild(params)
                                     type.Rename('return ' + type.value)
@@ -50,19 +48,18 @@ PRODUCTIONS
 
   FunctionDefinition<out tree> = CompoundStatement<out tree> .
   
-  FormalParameter<out fp>      = Type<out type> identifier 
+  FormalParameter<out fp>      = Type<out type>identifier 
                                  (. 
-                                    start_pos = self.token.pos - len(self.token.val) 
+                                    start_pos = self.token.pos - len(self.token.val)
                                     fp = Node(value=self.token.val, t='KEYARG', start_pos=start_pos, end_pos=self.token.pos) 
                                     fp.AddChild(type)
                                  .) .
 
-  Type<out type>               = (. start_pos = self.token.pos .)
-                                 ( "CELINA" (. val=self.token.val .) [ "["ConstExpression"]" ] 
-                                 | "BUKVI"  (. val=self.token.val .)
-                                 | "DROB"   (. val=self.token.val .) [ "["ConstExpression"]" ]
-                                 | "PRAVDA" (. val=self.token.val .) [ "["ConstExpression"]" ] )
-                                 (. type = Node(value='type: ' + val, t='TYPES', start_pos=start_pos, end_pos=(start_pos + len(val))) .) .
+  Type<out type>               = ( "CELINA" (. val = self.token.val; end_pos = self.token.pos .) [ "["ConstExpression"]" ] 
+                                 | "BUKVI"  (. val = self.token.val; end_pos = self.token.pos .)
+                                 | "DROB"   (. val = self.token.val; end_pos = self.token.pos .) [ "["ConstExpression"]" ]
+                                 | "PRAVDA" (. val = self.token.val; end_pos = self.token.pos .) [ "["ConstExpression"]" ] )
+                                 (. type = Node(value='type: ' + val, t='TYPES', start_pos=end_pos - 1, end_pos=end_pos + len(val)) .) .
   
   Statement<out tree>          = ( AssignmentExpression<out assigm_tree> (. tree = assigm_tree .)
                                  | CompoundStatement<out cmpd_tree> (. tree = cmpd_tree .) 
@@ -74,10 +71,10 @@ PRODUCTIONS
                                  | Statement<out stat_tree> (. t = stat_tree .) ) .
 
   CompoundStatement<out tree>  = (. tree = Node(t='body') .)
-                                 "{" {DeclrationOrStatement<out t> (. tree.AddChild(t) .)} "}" .
+                                 "{"{DeclrationOrStatement<out t> (. tree.AddChild(t) .)} "}" .
 
-  LocalDeclaration<out tree>   = Type<out type> (. start_pos = self.token.pos .) identifier 
-                                 (. name = self.token.val; tree = Node(value=name, t='KEYARG', start_pos=start_pos, end_pos=self.token.pos) .)
+  LocalDeclaration<out tree>   = Type<out type> identifier 
+                                 (. name = self.token.val; tree = Node(value=name, t='KEYARG', start_pos=self.token.pos - 1, end_pos=self.token.pos - 1 + len(name)) .)
                                  ( "(" [ FormalParamList<out fparams> ] ")" (.  .)
                                  | "=" Expression<out expr_tree> 
                                  (.
@@ -90,20 +87,17 @@ PRODUCTIONS
 
   ConstExpression              = Expression<out tree> .
   Expression<out tree>         = Conditional<out cond_tree> (. tree = cond_tree .)
-                                 [ AssignmentOperator<out op> (. end_pos = self.token.pos .) Expression<out expr_tree> 
+                                 [ AssignmentOperator<out op> (. as_pos = self.token.pos .) Expression<out expr_tree> 
                                  (. 
-                                    start_pos = end_pos - len(op)
-                                    tree = Node(value=op, t='expr', start_pos=start_pos, end_pos=end_pos)
+                                    tree = Node(value=op, t='expr', start_pos=as_pos  - 1, end_pos=as_pos + len(op) - 1)
                                     tree.AddChild(cond_tree)
                                     tree.AddChild(expr_tree) 
                                  .) ] .
 
-  ReturnStatement<out tree>    = (. start_pos = self.token.pos .)
-                                 "VOZDAT" (. tree = Node(value="VOZDAT", t='KEYWORD', start_pos=start_pos, end_pos=self.token.pos) .) 
+  ReturnStatement<out tree>    = "VOZDAT" (. tree = Node(value="VOZDAT", t='KEYWORD', start_pos=self.token.pos - 1, end_pos=self.token.pos + len("VOZDAT") - 1) .) 
                                  [ Expression<out expr_tree> (. tree.AddChild(expr_tree) .) ] ";" .
 
-  WhileStatement<out tree>     = (. start_pos = self.token.pos .)
-                                 "DOKOLE" (. tree = Node(value='DOKOLE', t='KEYWORD', start_pos=start_pos, end_pos=self.token.pos) .) 
+  WhileStatement<out tree>     = "DOKOLE" (. tree = Node(value='DOKOLE', t='KEYWORD', start_pos=self.token.pos - 1, end_pos=self.token.pos + len("DOKOLE") - 1) .) 
                                  "(" Expression<out expr_tree> ")" Statement<out state_tree> 
                                  (. 
                                     condition = Node("condition")
@@ -113,8 +107,7 @@ PRODUCTIONS
                                     tree.AddChild(state_tree)
                                  .) .
 
-  IfStatement<out tree>        = (. start_pos = self.token.pos .)
-                                 "KOLI" (. tree = Node(value='KOLI', t='KEYWORD', start_pos=start_pos, end_pos=self.token.pos) .) 
+  IfStatement<out tree>        = "KOLI" (. tree = Node(value='KOLI', t='KEYWORD', start_pos=self.token.pos - 1, end_pos= self.token.pos + len("VOZDAT") - 1) .) 
                                  "(" Expression<out expr_tree> ")" Statement<out state_tree> 
                                  (. 
                                     condition = Node("condition")
@@ -203,16 +196,16 @@ PRODUCTIONS
                                  { "[" Expression<out expression_tree> "]" (. tree.AddChild(expression_tree) .)
                                  | FunctionCall<out f_call_tree>           (. tree = f_call_tree .) }.
 
-  Primary<out prim>            = identifier   (. prim = Node(value=self.token.val, t='IDENTIFIER', start_pos=(self.token.pos - len(self.token.val)), end_pos=self.token.pos) .) 
-                                 | string     (. prim = Node(value=self.token.val, t='STRING', start_pos=(self.token.pos - len(self.token.val)), end_pos=self.token.pos) .) 
-                                 | number     (. prim = Node(value=self.token.val, t='CONSTANTS', start_pos=(self.token.pos - len(self.token.val)), end_pos=self.token.pos) .) 
+  Primary<out prim>            = identifier   (. prim = Node(value=self.token.val, t='IDENTIFIER', start_pos=self.token.pos - 1, end_pos= self.token.pos + len(self.token.val) - 1) .) 
+                                 | string     (. prim = Node(value=self.token.val, t='STRING', start_pos=self.token.pos - 1, end_pos= self.token.pos + len(self.token.val) - 1) .) 
+                                 | number     (. prim = Node(value=self.token.val, t='CONSTANTS', start_pos=self.token.pos - 1, end_pos= self.token.pos + len(self.token.val) - 1)  .) 
                                  | "(" (. start_pos = self.token.pos .) Expression<out tree> ")" (. end_pos = self.token.pos .)
                                  (. 
                                     prim = Node(value="()", t='BRACKETS', start_pos=start_pos, end_pos=end_pos) 
                                     prim.AddChild(tree) 
                                  .) .
 
-  FunctionCall<out res>        = (. res = Node(value=self.token.val, t='FUNCTIONS', start_pos=(self.token.pos-len(self.token.val)), end_pos=self.token.pos) .)
+  FunctionCall<out res>        = (. res = Node(value=self.token.val, t='FUNCTIONS', start_pos=self.token.pos - 1, end_pos=self.token.pos + len(self.token.val) - 1) .)
                                  "(" [ ActualParameters<out expr> (. res.AddChild(expr) .) ] ")" .
 
   ActualParameters<out tree>   = (. tree = Node('params') .) 
