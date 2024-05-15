@@ -36,7 +36,7 @@ class MainWindow(QMainWindow):
         self.current_editor = None
 
     def init_ui(self):
-        self.app_name = "PYQT EDITOR"
+        self.app_name = "Bxx IDE"
         self.setWindowTitle(self.app_name)
         self.resize(1300, 900)
 
