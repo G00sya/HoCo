@@ -306,8 +306,8 @@ class MainWindow(QMainWindow):
         self.ast_tree.setFrameShadow(QFrame.Plain)
         self.ast_tree.setStyleSheet(f'''
                           background-color: {self.side_bar_clr};
-                          color: #30d5c8;
-                          font: 12pt 'Fire Code'; 
+                          color: #abb2bf;
+                          font: 14pt 'Consolas'; 
                           font-weight: bold;
                       ''')
 
