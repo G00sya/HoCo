@@ -27,6 +27,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super(QMainWindow, self).__init__()
         # add before init
+        self.vcc_path = None
         self.tree_root = None
         self.side_bar_clr = "#282c34"
 
@@ -101,10 +102,8 @@ class MainWindow(QMainWindow):
     def get_editor(self, path: Path = None, is_python_file=False, is_VeKrestKrest_file=True) -> QsciScintilla:
         if is_VeKrestKrest_file:
             editor = Editor(self, path=path, is_python_file=False, is_VeKrestKrest_file=True)
-            self.current_editor = editor
         elif is_python_file:
             editor = Editor(self, path=path, is_python_file=True, is_VeKrestKrest_file=False)
-            self.current_editor = editor
         return editor
 
     def is_binary(self, path):
@@ -143,6 +142,10 @@ class MainWindow(QMainWindow):
         # create new tab
         self.tab_view.addTab(editor, path.name)
         editor.setText(path.read_text(encoding="utf-8"))
+        if path.suffix == ".vcc":
+            self.current_editor = editor
+            self.build_ast(self.current_editor)
+            editor.styleCode()
         self.setWindowTitle(f"{path.name} - {self.app_name}")
         self.current_file = path
         self.tab_view.setCurrentIndex(self.tab_view.count() - 1)
@@ -184,7 +187,7 @@ class MainWindow(QMainWindow):
         ''')
         return frame
 
-    def build_ast(self):
+    def build_ast(self, editor):
         def clear_widget(tree_widget):
             tree_widget.clear()
 
@@ -198,13 +201,10 @@ class MainWindow(QMainWindow):
 
             item.setExpanded(True)
 
-        s = open(self.srcName_vcc, 'r', encoding='utf-8')
-        code = s.read()
-        self.code_len = len(code)
+        code = editor.text()
         scanner = Scanner(code)
         parser = Parser()
         ast_tree_code = parser.Parse(scanner)
-        ast_tree_code.PrintTree()
         self.tree_root = ast_tree_code.GetRoot()
 
         clear_widget(self.ast_tree)
@@ -298,23 +298,11 @@ class MainWindow(QMainWindow):
         # configuring the header
         self.ast_tree.setHeaderLabel("Ast tree")
 
-        self.srcName_vcc = 'C:\\Users\\User\\Desktop\\compiler\\HoCo\\examples\\example.vcc'
-        self.build_ast()
+        # self.srcName_vcc = 'C:\\Users\\User\\Desktop\\compiler\\HoCo\\examples\\example.vcc'
 
         def on_ast_node_selected(item):
-            path = Path("C:\\Users\\User\\Desktop\\compiler\\HoCo\\examples\\example.vcc")
-            is_open = 0
-            for i in range(self.tab_view.count()):
-                if self.tab_view.tabText(i) == path.name or self.tab_view.tabText(i) == "*" + path.name:
-                    is_open = 1
-            if not is_open:
-                self.set_new_tab(path)
             node = item.data(0, Qt.UserRole)
-            start_pos = node.start_pos
-            end_pos = node.end_pos
-            # Выделение выбранной лексемы в редакторе
-            self.current_editor.VeKrestKrestlexer.styleText(0, self.code_len) # TODO
-            self.current_editor.highlightCode(start_pos, end_pos, 9)
+            self.current_editor.highlightCode(node, node.type)
 
         self.ast_tree.itemClicked.connect(lambda item: on_ast_node_selected(item))
 
@@ -354,6 +342,7 @@ class MainWindow(QMainWindow):
             if dialog == QMessageBox.Yes:
                 self.save_file()
 
+        self.ast_tree.clear()
         self.tab_view.removeTab(index)
 
     def show_hide_tab(self, e, type_):
@@ -385,7 +374,7 @@ class MainWindow(QMainWindow):
 
         editor = self.tab_view.currentWidget()
         self.current_file.write_text(editor.text())
-        self.build_ast()
+        self.build_ast(editor)
         self.statusBar().showMessage(f"Saved {self.current_file.name}", 2000)
         editor.current_file_changed = False
 
@@ -399,6 +388,7 @@ class MainWindow(QMainWindow):
         if file_path == '':
             self.statusBar().showMessage("Cancelled", 2000)
             return
+
         path = Path(file_path)
         path.write_text(editor.text())
         self.tab_view.setTabText(self.tab_view.currentIndex(), path.name)

@@ -103,10 +103,13 @@ class Editor(QsciScintilla):
         # key press
         # self.keyPressEvent = self.handle_editor_press
 
-    def highlightCode(self, start_pos: int, end_pos: int, highlight_style: int):
-        self.VeKrestKrestlexer.highlightRegion_reg(start_pos, end_pos, highlight_style)
-        self.VeKrestKrestlexer.generate_token_regular(self.text())
+    def styleCode(self):
+        #self.VeKrestKrestlexer.generate_token_coco(self.text())
+        self.VeKrestKrestlexer.styleText(0, len(self.text()))
 
+    def highlightCode(self, node, highlight_style: int):
+        self.VeKrestKrestlexer.styleText(0, len(self.text()))
+        self.VeKrestKrestlexer.highlightRegion_reg(node.start_pos, node.end_pos, highlight_style)
 
     @property
     def current_file_changed(self):

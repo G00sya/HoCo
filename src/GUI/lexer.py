@@ -323,16 +323,7 @@ class KrestCustomLexer(NeutronLexer):
 
     def highlightRegion_reg(self, start: int, end: int, highlight_style: int):
         self.startStyling(start)
-        text = self.editor.text()[start:end]
-        self.generate_token_regular(text)
-        self.setStyling(len(text), highlight_style)
-        while start < end:
-            curr_token = self.next_tok()
-            if curr_token is None:
-                break
-            tok, tok_len = curr_token
-            self.setStyling(tok_len, highlight_style)
-            start += tok_len
+        self.setStyling(end - start + 1, 1)
 
     def styleText(self, start: int, end: int) -> None:
         # 1. Start styling procedure
@@ -408,20 +399,23 @@ class KrestCustomLexerCoco(NeutronLexer):
     def __init__(self, editor):
         super(KrestCustomLexerCoco, self).__init__("Vekrestkrest", editor)
 
-        self.keywords = ["VOZDAT", "KOLI", "DOKOLE", "ALI", "DA", "OTNUD"]
-        self.builtin_names = ["CELINA", "BUKVI", "DROB", "PRAVDA"]
+        # self.keywords = ["VOZDAT", "KOLI", "DOKOLE", "ALI", "DA", "OTNUD"]
+        # self.builtin_names = ["CELINA", "BUKVI", "DROB", "PRAVDA"]
 
-        self.setKeywords(self.keywords)
-        self.setBuiltinNames(self.builtin_names)
+        # self.setKeywords(self.keywords)
+        # self.setBuiltinNames(self.builtin_names)
 
-    def highlightRegion_reg(self, start: int, end: int, highlight_style: int):
-        self.startStyling(start)
-        text = self.editor.text()[start:end]
-        self.setStyling(len(text), highlight_style)
+    def highlightRegion_reg(self, node, highlight_style: int):
+        self.startStyling(node.start_pos)
+        self.setStyling(node.end_pos - node.start_pos + 1, 9)
+        print(f'{node.value} was styled, start: {node.start_pos}, end: {node.end_pos}, node_len = {len(node.value)}\n')
+    # Need to inherit
+    def styleText(self, start: int, end: int):
+        pass
 
-    def styleText(self, start: int, end: int) -> None:
+    def MystyleText(self) -> None:
+        print("STYLE TEXT")
         for element in self.token_list:
-            if element.start_pos != -1:
-                self.startStyling(element.start_pos)
-                self.setStyling(len(element.value), 1)
-
+            self.startStyling(element.start_pos)
+            self.setStyling(element.end_pos - element.start_pos + 1, 2)
+            print(f'{element.value} was styled, start: {element.start_pos}, end: {element.end_pos}\n')

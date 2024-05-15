@@ -26,4 +26,6 @@ delt(CELINA a, CELINA b) -> CELINA {
         print(3);
     }
     VOZDAT d;
-}
+} 
+
+
