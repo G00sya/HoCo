@@ -38,7 +38,8 @@ class MainWindow(QMainWindow):
     def init_ui(self):
         self.app_name = "Bxx IDE"
         self.setWindowTitle(self.app_name)
-        self.resize(1300, 900)
+        self.resize(1500, 900)
+        self.centerWindow()
 
         root_dir = os.getcwd()
         full_path = os.path.join("static", "css", "style.qss")
@@ -57,6 +58,14 @@ class MainWindow(QMainWindow):
         self.set_up_status_bar()
 
         self.show()
+
+    def centerWindow(self):
+        screen = QDesktopWidget().screenGeometry()
+        window_size = self.geometry()
+        x = (screen.width() - window_size.width()) // 2
+        y = (screen.height() - window_size.height()) // 2
+
+        self.move(x, y)
 
     def set_up_status_bar(self):
         # Create status bar
