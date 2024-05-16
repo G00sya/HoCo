@@ -451,17 +451,23 @@ class MainWindow(QMainWindow):
             editor.copy()
 
     def set_style1(self, style_type):
-        self.current_style = os.getcwd() + "\\..\\..\\static\\theme.json"
+        if self.current_editor is None:
+            return
+        self.current_style = os.path.join(os.getcwd(), "..", "..", "static", "theme.json")
         if self.current_editor.is_VeKrestKrest_file:
             self.current_editor.VeKrestKrestlexer.theme = self.current_style
 
     def set_style2(self, style_type):
-        self.current_style = os.getcwd() + "\\..\\..\\static\\theme.json"
+        if self.current_editor is None:
+            return
+        self.current_style = os.path.join(os.getcwd(), "..", "..", "static", "theme.json")
         if self.current_editor.is_VeKrestKrest_file:
             self.current_editor.VeKrestKrestlexer.theme = self.current_style
 
     def set_style3(self, style_type):
-        self.current_style = os.getcwd() + "\\..\\..\\static\\theme.json"
+        if self.current_editor is None:
+            return
+        self.current_style = os.path.join(os.getcwd(), "..", "..", "static", "theme.json")
         if self.current_editor.is_VeKrestKrest_file:
             self.current_editor.VeKrestKrestlexer.theme = self.current_style
 
