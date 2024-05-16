@@ -186,9 +186,9 @@ PRODUCTIONS
   CastExp<out tree>            = UnaryExp<out unary_tree> (. tree = unary_tree .) .
 
   UnaryExp<out tree>           = PostFixExp<out s> (. tree = s .) 
-                                 | (. start_pos = self.toke.pos .)UnaryOperator<out op> CastExp<out cast_tree>
+                                 | UnaryOperator<out op> (. op_pos = self.token.pos .) CastExp<out cast_tree> 
                                  (.
-                                    tree = Node(value=op, start_pos=start_pos, end_pos=(start_pos + len(op)))
+                                    tree = Node(value=op, t='OPERATORS', start_pos=op_pos - 1, end_pos=op_pos + len(op) - 1)
                                     tree.AddChild(cast_tree) 
                                  .) .
 
