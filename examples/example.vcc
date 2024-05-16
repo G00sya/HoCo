@@ -14,6 +14,9 @@ main(CELINA argc) -> CELINA {
 }
 
 delt(CELINA a, CELINA b) -> CELINA {
+    CELINA f = 23;
+    CELINA DF = 23;
+    CELINA F = 13132;
     CELINA d = (3 + 2) * 2;
     KOLI (a > b) {
         d = a - b;

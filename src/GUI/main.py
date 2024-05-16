@@ -99,15 +99,54 @@ class MainWindow(QMainWindow):
         copy_action.setShortcut("Ctrl+C")
         copy_action.triggered.connect(self.copy)
 
+
+
         # Style menu
         style_menu = menu_bar.addMenu("Backlight style")
+
+        color_change_menu = QMenu("Change Color", self)
+        style_menu.addMenu(color_change_menu)
+
+        default = color_change_menu.addAction("DEFAULT Color")
+        default.triggered.connect(lambda: self.show_settings_dialog("DEFAULT"))
+
+        keyword = color_change_menu.addAction("KEYWORD Color")
+        keyword.triggered.connect(lambda: self.show_settings_dialog("KEYWORD"))
+
+        types = color_change_menu.addAction("TYPES Color")
+        types.triggered.connect(lambda: self.show_settings_dialog("TYPES"))
+
+        string = color_change_menu.addAction("STRING Color")
+        string.triggered.connect(lambda: self.show_settings_dialog("STRING"))
+
+        brackets = color_change_menu.addAction("BRACKETS Color")
+        brackets.triggered.connect(lambda: self.show_settings_dialog("BRACKETS"))
+
+        comments = color_change_menu.addAction("COMMENTS Color")
+        comments.triggered.connect(lambda: self.show_settings_dialog("COMMENTS"))
+
+        constants = color_change_menu.addAction("CONSTANTS Color")
+        constants.triggered.connect(lambda: self.show_settings_dialog("CONSTANTS"))
+
+        functions = color_change_menu.addAction("FUNCTIONS Color")
+        functions.triggered.connect(lambda: self.show_settings_dialog("FUNCTIONS"))
+
+        gram_construction = color_change_menu.addAction("GRAMMAR CONSTRUCTION Color")
+        gram_construction.triggered.connect(lambda: self.show_settings_dialog("GRAMMAR_CONSTRUCTION"))
+
         style_action1 = style_menu.addAction("Set style default")
         style_action2 = style_menu.addAction("Set style hack")
         style_action3 = style_menu.addAction("Set style pro")
+
         style_action1.triggered.connect(self.set_style_default)
         style_action2.triggered.connect(self.set_style_hack)
         style_action3.triggered.connect(self.set_style_pro)
-        # you can add more
+
+    def show_settings_dialog(self, type):
+        color = QColorDialog.getColor()
+        if self.current_editor.is_VeKrestKrest_file:
+            self.current_editor.VeKrestKrestlexer.setColor(color, getattr(self.current_editor.VeKrestKrestlexer, type.upper()))
+    # you can add more
 
     def get_editor(self, path: Path = None, is_python_file=False, is_VeKrestKrest_file=True) -> QsciScintilla:
         if is_VeKrestKrest_file:
@@ -155,6 +194,9 @@ class MainWindow(QMainWindow):
         if path.suffix == ".vcc":
             self.current_editor = editor
             self.build_ast(self.current_editor)
+            self.current_editor.VeKrestKrestlexer.generate_token_coco(self.current_editor.text())
+
+
         self.setWindowTitle(f"{path.name} - {self.app_name}")
         self.current_file = path
         self.tab_view.setCurrentIndex(self.tab_view.count() - 1)
@@ -213,7 +255,15 @@ class MainWindow(QMainWindow):
         code = editor.text()
         scanner = Scanner(code)
         parser = Parser()
+
+        Errors.Init('', '', False, parser.getParsingPos, parser.errorMessages)
+        Errors.count = 0
         ast_tree_code = parser.Parse(scanner)
+        Errors.Summarize(scanner.buffer)
+        if Errors.count != 0:
+            ast_tree_code = ASTree()
+            ast_tree_code.AddNode(Node("ERROR"))
+
         self.tree_root = ast_tree_code.GetRoot()
 
         clear_widget(self.ast_tree)
@@ -387,6 +437,7 @@ class MainWindow(QMainWindow):
         editor = self.tab_view.currentWidget()
         self.current_file.write_text(editor.text())
         self.build_ast(editor)
+        self.current_editor.VeKrestKrestlexer.generate_token_coco(self.current_editor.text())
         self.statusBar().showMessage(f"Saved {self.current_file.name}", 2000)
         editor.current_file_changed = False
 
@@ -439,7 +490,7 @@ class MainWindow(QMainWindow):
             editor.copy()
 
     def set_style_default(self):
-        self.current_style = os.getcwd() + "\\..\\..\\static\\theme.json"
+        self.current_style = os.getcwd() + "\\..\\..\\static\\theme1.json"
         if self.current_editor.is_VeKrestKrest_file:
             self.current_editor.VeKrestKrestlexer.theme = self.current_style
             self.current_editor.VeKrestKrestlexer._init_theme()
