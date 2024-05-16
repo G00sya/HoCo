@@ -1,11 +1,6 @@
-import sys
-import os
 import os.path
-import locale
 
-from Scanner import *
-from Parser import *
-from AstTree import *
+from src.parser.Parser import *
 
 srcName = 'example.txt'
 dirName, fileName = os.path.split(srcName)

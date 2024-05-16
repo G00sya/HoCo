@@ -1,17 +1,16 @@
 import os
+import sys
 import re
 import keyword
 import builtins
 import types
 import json
 
-from PyQt5.Qsci import QsciLexerCustom, QsciScintilla
-from PyQt5.QtGui import QFont, QColor, QTextCursor
-from PyQt5.QtCore import *
-from PyQt5.QtWidgets import *
+from PyQt5.Qsci import QsciLexerCustom
+from PyQt5.QtGui import QFont, QColor
 
-from Parser import *
-from Scanner import *
+from parser.Parser import *
+from parser.Scanner import *
 
 # config type
 DefaultConfig = dict[str, str, tuple[str, int]]

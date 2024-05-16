@@ -4,12 +4,17 @@ from PyQt5.QtGui import *
 from PyQt5.Qsci import *
 
 import os
+import sys
 from pathlib import Path
+
+current_directory = os.path.dirname(os.path.realpath(__file__))
+parent_directory = os.path.dirname(current_directory)
+sys.path.append(parent_directory)
 
 from editor import Editor
 from file_manager import FileManager
-from Parser import *
-from Scanner import *
+from parser.Parser import *
+from parser.Scanner import *
 
 
 class MainWindow(QMainWindow):
