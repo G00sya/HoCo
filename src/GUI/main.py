@@ -340,6 +340,11 @@ class MainWindow(QMainWindow):
 
         self.setCentralWidget(body_frame)
 
+    def resizeEvent(self, event):
+        new_width = event.size().width()
+        self.ast_tree.setMaximumWidth(int(new_width / 5 * 2))
+        super().resizeEvent(event)
+
     def show_dialog(self, title, msg) -> int:
         dialog = QMessageBox(self)
         dialog.setFont(self.font())
