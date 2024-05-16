@@ -145,7 +145,6 @@ class MainWindow(QMainWindow):
         if path.suffix == ".vcc":
             self.current_editor = editor
             self.build_ast(self.current_editor)
-            editor.styleCode()
         self.setWindowTitle(f"{path.name} - {self.app_name}")
         self.current_file = path
         self.tab_view.setCurrentIndex(self.tab_view.count() - 1)
@@ -302,7 +301,10 @@ class MainWindow(QMainWindow):
 
         def on_ast_node_selected(item):
             node = item.data(0, Qt.UserRole)
-            self.current_editor.highlightCode(node, node.type)
+            start_line, start_index = self.current_editor.lineIndexFromPosition(node.start_pos + 1)
+            end_line, end_index = self.current_editor.lineIndexFromPosition(node.end_pos + 1)
+
+            self.current_editor.setSelection(start_line, start_index, end_line, end_index)
 
         self.ast_tree.itemClicked.connect(lambda item: on_ast_node_selected(item))
 

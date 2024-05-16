@@ -27,5 +27,3 @@ delt(CELINA a, CELINA b) -> CELINA {
     }
     VOZDAT d;
 } 
-
-

@@ -6,7 +6,7 @@ import types
 import json
 
 from PyQt5.Qsci import QsciLexerCustom, QsciScintilla
-from PyQt5.QtGui import QFont, QColor
+from PyQt5.QtGui import QFont, QColor, QTextCursor
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
@@ -393,29 +393,61 @@ class KrestCustomLexer(NeutronLexer):
                 self.setStyling(tok_len, self.DEFAULT)
 
 
+def define_selection(type):
+    if type == "DEFAULT":
+        return 0
+    elif type == "KEYWORD":
+        return 1
+    elif type == "TYPES":
+        return 2
+    elif type == "STRING":
+        return 3
+    elif type == "KEYARG":
+        return 4
+    elif type == "BRACKETS":
+        return 5
+    elif type == "COMMENTS":
+        return 6
+    elif type == "CONSTANTS" or type == "IDENTIFIER":
+        return 7
+    elif type == "FUNCTIONS":
+        return 8
+    elif type == "GRAMMAR_CONSTRUCTION":
+        return 9
+    else:
+        return 0
+
+
 class KrestCustomLexerCoco(NeutronLexer):
     """Custom lexer for Vekrestkrest"""
 
     def __init__(self, editor):
         super(KrestCustomLexerCoco, self).__init__("Vekrestkrest", editor)
 
-        # self.keywords = ["VOZDAT", "KOLI", "DOKOLE", "ALI", "DA", "OTNUD"]
-        # self.builtin_names = ["CELINA", "BUKVI", "DROB", "PRAVDA"]
+    # def highlightRegion_reg(self, node, highlight_style: int):
+    #     self.startStyling(node.start_pos)
+    #     self.setStyling(node.end_pos - node.start_pos + 1, define_selection(highlight_style))
+    #     print(f'{node.value} was styled, start: {node.start_pos}, end: {node.end_pos}, node_len = {len(node.value)}\n')
+    # def get_real_position(self, start_position, end_position):
+    #     addition = 0
+    #     for i in range(start_position):
+    #         if self.editor.text()[i] == ' ':
+    #             addition += 1
+    #         if self.editor.text()[i] == '\n':
+    #             addition = 0
+    #
+    #     return start_position + addition, end_position + addition
 
-        # self.setKeywords(self.keywords)
-        # self.setBuiltinNames(self.builtin_names)
-
-    def highlightRegion_reg(self, node, highlight_style: int):
-        self.startStyling(node.start_pos)
-        self.setStyling(node.end_pos - node.start_pos + 1, 9)
-        print(f'{node.value} was styled, start: {node.start_pos}, end: {node.end_pos}, node_len = {len(node.value)}\n')
-    # Need to inherit
     def styleText(self, start: int, end: int):
-        pass
-
-    def MystyleText(self) -> None:
-        print("STYLE TEXT")
+        self.generate_token_coco(self.editor.text())
         for element in self.token_list:
-            self.startStyling(element.start_pos)
-            self.setStyling(element.end_pos - element.start_pos + 1, 2)
-            print(f'{element.value} was styled, start: {element.start_pos}, end: {element.end_pos}\n')
+            if element.type != "GRAMMAR_CONSTRUCTION" and element.type != "BRACKETS":
+                self.startStyling(element.start_pos + 1)
+                self.setStyling(element.end_pos - element.start_pos, define_selection(element.type))
+                print(
+                    f'{element.value} was styled, start: {element.start_pos}, end: {element.end_pos}, type = {element.type}\n')
+
+        for i in range(len(self.editor.text())):
+            if self.editor.text()[i] in ['(', ')', '{', '}', '[', ']']:
+                self.startStyling(i)
+                self.setStyling(1, define_selection("BRACKETS"))
