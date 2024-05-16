@@ -17,4 +17,5 @@ pip install ./dist/CocoRPy3-3.1.0-py3-none-any.whl
 cd ..
 coco ../src/parser/grammar.atg
 python3 cocor_corrector.py
+cp Parser.py ../src/parser/Parser.py
 

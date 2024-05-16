@@ -69,14 +69,14 @@ def ConnectSame(tree, trees, operation, pos):
     return tree
 
 
-def ConnectWithOps(tree, trees, ops, postions):
+def ConnectWithOps(tree, trees, ops, positions):
     if len(trees) > 1:
-        tree = Node(ops[0], 'OPERATORS', start_pos=postions[0][0], end_pos=postions[0][1])
+        tree = Node(ops[0], 'OPERATORS', start_pos=positions[0][0], end_pos=positions[0][1])
         tree.AddChild(trees[0])
         last = tree
         for i in range(1, len(trees) - 1):
             right_pos, _ = last.GetCoords()
-            cur = Node(ops[i], 'OPERATORS', *postions[i])
+            cur = Node(ops[i], 'OPERATORS', *positions[i])
             cur.AddChild(trees[i])
             last.AddChild(cur)
             last = cur

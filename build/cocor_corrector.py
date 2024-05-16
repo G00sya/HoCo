@@ -11,7 +11,7 @@ output_file = absolute_path
 with open(input_file, "r") as file:
     content = file.read()
 
-pattern = r"self.VeKrestKrest()"
+pattern = r"self\.VeKrestKrest\(\)"
 replacement = "return self.VeKrestKrest()"
 modified_content = re.sub(pattern, replacement, content)
 
