@@ -89,7 +89,7 @@ PRODUCTIONS
   Expression<out tree>         = Conditional<out cond_tree> (. tree = cond_tree .)
                                  [ AssignmentOperator<out op> (. as_pos = self.token.pos .) Expression<out expr_tree> 
                                  (. 
-                                    tree = Node(value=op, start_pos=as_pos  - 1, end_pos=as_pos + len(op) - 1)
+                                    tree = Node(value=op, t='OPERATORS', start_pos=as_pos  - 1, end_pos=as_pos + len(op) - 1)
                                     tree.AddChild(cond_tree)
                                     tree.AddChild(expr_tree) 
                                  .) ] .
