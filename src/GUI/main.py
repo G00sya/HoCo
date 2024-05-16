@@ -101,12 +101,12 @@ class MainWindow(QMainWindow):
 
         # Style menu
         style_menu = menu_bar.addMenu("Backlight style")
-        style_action1 = style_menu.addAction("Set style 1")
-        style_action2 = style_menu.addAction("Set style 2")
+        style_action1 = style_menu.addAction("Set style default")
+        style_action2 = style_menu.addAction("Set style hack")
         style_action3 = style_menu.addAction("Set style 3")
-        style_action1.triggered.connect(self.set_style1)
-        style_action2.triggered.connect(self.set_style2)
-        style_action3.triggered.connect(self.set_style3)
+        style_action1.triggered.connect(self.set_style_default)
+        style_action2.triggered.connect(self.set_style_hack)
+        style_action3.triggered.connect(self.set_style_pro)
         # you can add more
 
     def get_editor(self, path: Path = None, is_python_file=False, is_VeKrestKrest_file=True) -> QsciScintilla:
@@ -438,20 +438,23 @@ class MainWindow(QMainWindow):
         if editor is not None:
             editor.copy()
 
-    def set_style1(self, style_type):
+    def set_style_default(self):
         self.current_style = os.getcwd() + "\\..\\..\\static\\theme.json"
         if self.current_editor.is_VeKrestKrest_file:
             self.current_editor.VeKrestKrestlexer.theme = self.current_style
+            self.current_editor.VeKrestKrestlexer._init_theme()
 
-    def set_style2(self, style_type):
-        self.current_style = os.getcwd() + "\\..\\..\\static\\theme.json"
+    def set_style_hack(self):
+        self.current_style = os.getcwd() + "\\..\\..\\static\\theme2.json"
         if self.current_editor.is_VeKrestKrest_file:
             self.current_editor.VeKrestKrestlexer.theme = self.current_style
+            self.current_editor.VeKrestKrestlexer._init_theme()
 
-    def set_style3(self, style_type):
-        self.current_style = os.getcwd() + "\\..\\..\\static\\theme.json"
+    def set_style_pro(self):
+        self.current_style = os.getcwd() + "\\..\\..\\static\\theme3.json"
         if self.current_editor.is_VeKrestKrest_file:
             self.current_editor.VeKrestKrestlexer.theme = self.current_style
+            self.current_editor.VeKrestKrestlexer._init_theme()
 
 
 if __name__ == '__main__':

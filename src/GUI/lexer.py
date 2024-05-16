@@ -122,10 +122,10 @@ class NeutronLexer(QsciLexerCustom):
                     try:
                         self.setFont(
                             QFont(
-                                v.get("family", "Consolas"),
-                                v.get("font-size", 14),
-                                self.font_weights.get(v.get("font-weight", QFont.Normal)),
-                                v.get("italic", False)
+                                v.get("family"),
+                                v.get("font-size"),
+                                self.font_weights.get(v.get("font-weight")),
+                                v.get("italic")
                             ),
                             getattr(self, name.upper())
                         )
@@ -427,6 +427,7 @@ class KrestCustomLexerCoco(NeutronLexer):
 
     def styleText(self, start: int, end: int):
         self.generate_token_coco(self.editor.text())
+        self._init_theme()
         for element in self.token_list:
             if element.type != "GRAMMAR_CONSTRUCTION" and element.type != "BRACKETS":
                 self.startStyling(element.start_pos + 1)
@@ -438,3 +439,4 @@ class KrestCustomLexerCoco(NeutronLexer):
             if self.editor.text()[i] in ['(', ')', '{', '}', '[', ']']:
                 self.startStyling(i)
                 self.setStyling(1, define_selection("BRACKETS"))
+        print(self.theme)
