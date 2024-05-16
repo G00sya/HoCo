@@ -107,6 +107,8 @@ class NeutronLexer(QsciLexerCustom):
         with open(self.theme, "r") as f:
             self.theme_json = json.load(f)
 
+        paper = self.theme_json["theme"]["paper"]
+        self.setPaper(QColor(paper))
         colors = self.theme_json["theme"]["syntax"]
 
         for clr in colors:
@@ -125,10 +127,10 @@ class NeutronLexer(QsciLexerCustom):
                     try:
                         self.setFont(
                             QFont(
-                                v.get("family", "Consolas"),
-                                v.get("font-size", 14),
-                                self.font_weights.get(v.get("font-weight", QFont.Normal)),
-                                v.get("italic", False)
+                                v.get("family"),
+                                v.get("font-size"),
+                                self.font_weights.get(v.get("font-weight")),
+                                v.get("italic")
                             ),
                             getattr(self, name.upper())
                         )
@@ -400,7 +402,7 @@ class KrestCustomLexer(NeutronLexer):
 def define_selection(type):
     if type == "DEFAULT":
         return 0
-    elif type == "KEYWORD":
+    elif type == "KEYWORD" or type == "OPERATORS":
         return 1
     elif type == "TYPES":
         return 2
@@ -429,15 +431,23 @@ class KrestCustomLexerCoco(NeutronLexer):
         super(KrestCustomLexerCoco, self).__init__("Vekrestkrest", editor)
 
     def styleText(self, start: int, end: int):
-        self.generate_token_coco(self.editor.text())
-        for element in self.token_list:
-            if element.type != "GRAMMAR_CONSTRUCTION" and element.type != "BRACKETS":
-                self.startStyling(element.start_pos + 1)
-                self.setStyling(element.end_pos - element.start_pos, define_selection(element.type))
-                print(
-                    f'{element.value} was styled, start: {element.start_pos}, end: {element.end_pos}, type = {element.type}\n')
+        if self.editor._current_file_changed == False:
+            # self.generate_token_coco(self.editor.text())
+            for element in self.token_list:
+                if element.type != "GRAMMAR_CONSTRUCTION" and element.type != "BRACKETS":
+                    self.startStyling(element.start_pos + 1)
+                    self.setStyling(element.end_pos - element.start_pos, define_selection(element.type))
+                    # print(
+                    #     f'{element.value} was styled, start: {element.start_pos}, end: {element.end_pos}, type = {element.type}\n')
 
-        for i in range(len(self.editor.text())):
-            if self.editor.text()[i] in ['(', ')', '{', '}', '[', ']']:
-                self.startStyling(i)
-                self.setStyling(1, define_selection("BRACKETS"))
+            for i in range(len(self.editor.text())):
+                if self.editor.text()[i] in ['(', ')', '{', '}', '[', ']']:
+                    self.startStyling(i)
+                    self.setStyling(1, define_selection("BRACKETS"))
+                if self.editor.text()[i] == ';':
+                    self.startStyling(i)
+                    self.setStyling(1, define_selection("DEFAULT"))
+        else:
+            self.startStyling(0)
+            self.setStyling(len(self.editor.text()), define_selection("DEFAULT"))
+

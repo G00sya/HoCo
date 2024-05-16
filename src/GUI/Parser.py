@@ -268,6 +268,7 @@ class Parser(object):
 
         tree = ASTree()
         tree.AddNode(main_tree)
+        # tree.PrintTree()
 
         return tree
 
@@ -484,7 +485,7 @@ class Parser(object):
             op = self.AssignmentOperator()
             as_pos = self.token.pos
             expr_tree = self.Expression()
-            tree = Node(value=op, t='expr', start_pos=as_pos - 1, end_pos=as_pos + len(op) - 1)
+            tree = Node(value=op, t='OPERATORS', start_pos=as_pos - 1, end_pos=as_pos + len(op) - 1)
             tree.AddChild(cond_tree)
             tree.AddChild(expr_tree)
 
@@ -518,42 +519,54 @@ class Parser(object):
         and_tree_1 = self.LogANDExp()
         tree = and_tree_1
         trees = [and_tree_1];
-        start_pos = 0
+        ops = [];
+        positions = []
         while self.la.kind == 22:
-            start_pos = self.token.pos
             self.Get()
+            end_pos = self.token.pos
             and_tree_2 = self.LogANDExp()
+            op = 'ALI'
+            ops.append(op)
+            positions.append((end_pos - 1, end_pos + len(op) - 1))
             trees.append(and_tree_2)
 
-        tree = ConnectSame(tree, trees, 'ALI', start_pos)
+        tree = ConnectWithOps(tree, trees, ops, positions)
         return tree
 
     def LogANDExp(self):
         eq_tree_1 = self.EqualExp()
         tree = eq_tree_1
         trees = [eq_tree_1];
-        start_pos = 0
+        ops = [];
+        positions = []
         while self.la.kind == 23:
-            start_pos = self.token.pos
             self.Get()
+            end_pos = self.token.pos
             eq_tree_2 = self.EqualExp()
+            op = 'DA'
+            ops.append(op)
+            positions.append((end_pos - 1, end_pos + len(op) - 1))
             trees.append(eq_tree_2)
 
-        tree = ConnectSame(tree, trees, 'DA', start_pos)
+        tree = ConnectWithOps(tree, trees, ops, positions)
         return tree
 
     def EqualExp(self):
         rel_tree_1 = self.RelationExp()
         tree = rel_tree_1
         trees = [rel_tree_1];
-        start_pos = 0
+        ops = [];
+        positions = []
         while self.la.kind == 24:
-            start_pos = self.token.pos
             self.Get()
+            end_pos = self.token.pos
             rel_tree_2 = self.RelationExp()
+            op = '=='
+            ops.append(op)
+            positions.append((end_pos - 1, end_pos + len(op) - 1))
             trees.append(rel_tree_2)
 
-        tree = ConnectSame(tree, trees, '==', start_pos)
+        tree = ConnectWithOps(tree, trees, ops, positions)
         return tree
 
     def RelationExp(self):
@@ -641,10 +654,10 @@ class Parser(object):
             s = self.PostFixExp()
             tree = s
         elif self.StartOf(8):
-            start_pos = self.toke.pos
             op = self.UnaryOperator()
+            op_pos = self.token.pos
             cast_tree = self.CastExp()
-            tree = Node(value=op, start_pos=start_pos, end_pos=(start_pos + len(op)))
+            tree = Node(value=op, t='OPERATORS', start_pos=op_pos - 1, end_pos=op_pos + len(op) - 1)
             tree.AddChild(cast_tree)
 
         else:

@@ -2,16 +2,17 @@
     "theme": {
         "name": "default-dark",
         "version": "1.0",
-        
+        "paper": "#282c34",
+
         "syntax": [
             {
                 "default": {
                     "color": "#abb2bf",
                     "paper-color": "#282c34",
                     "font": { 
-                        "family": "consolas",
+                        "family": "Hack",
                         "font-size": 14,
-                        "font-weight": "bold",
+                        "font-weight": "medium",
                         "italic": false
                     }
                 }
@@ -21,9 +22,9 @@
                     "color": "#c678dd",
                     "paper-color": "#282c34",
                     "font": { 
-                        "family": "consolas",
+                        "family": "Hack",
                         "font-size": 14,
-                        "font-weight": "bold",
+                        "font-weight": "medium",
                         "italic": false
                     }
                 }
@@ -33,9 +34,9 @@
                     "color": "#C68F55",
                     "paper-color": "#282c34",
                     "font": { 
-                        "family": "consolas",
+                        "family": "Hack",
                         "font-size": 14,
-                        "font-weight": "bold",
+                        "font-weight": "medium",
                         "italic": false
                     }
                 }
@@ -45,9 +46,9 @@
                     "color": "#61afd1",
                     "paper-color": "#282c34",
                     "font": { 
-                        "family": "consolas",
+                        "family": "Hack",
                         "font-size": 14,
-                        "font-weight": "bold",
+                        "font-weight": "medium",
                         "italic": false
                     }
                 }
@@ -57,9 +58,9 @@
                     "color": "#61afd1",
                     "paper-color": "#282c34",
                     "font": { 
-                        "family": "consolas",
+                        "family": "Hack",
                         "font-size": 14,
-                        "font-weight": "bold",
+                        "font-weight": "medium",
                         "italic": true
                     }
                 }

@@ -2,18 +2,23 @@ a(CELINA b) -> CELINA {
     VOZDAT 2 * b DA 3 < 1;
 }
 
-f() -> CELINA {
+f() -> CELINA { 
+    CELINA f2 = 4;
     CELINA f1 = 3;
     CELINA b = func(4 + 1 * f1) + a(1);
     BUKVI buk = "12";
     VOZDAT b * f1;
 }
 
+
 main(CELINA argc) -> CELINA {
     VOZDAT 0;
 }
 
 delt(CELINA a, CELINA b) -> CELINA {
+    CELINA f = 23;
+    CELINA DF = 23;
+    CELINA F = 13132;
     CELINA d = (3 + 2) * 2;
     KOLI (a > b) {
         d = a - b;
