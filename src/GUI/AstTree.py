@@ -1,5 +1,5 @@
 class Node:
-    def __init__(self, value='', t='DEFAULT', start_pos=0, end_pos=0):
+    def __init__(self, value='', t='DEFAULT', start_pos=-2, end_pos=-2):
         self.value = value
         self.type = t
         self.start_pos = start_pos
@@ -21,13 +21,14 @@ class Node:
             array.append(self)
         for child in self.childs:
             child.Pack(array)
+
     def PrevCount(self):
         return len(self.childs)
 
     def Rename(self, name: str):
         if (len(name)): self.value = name
 
-    def SetCoords(self, start_pos=0, end_pos=0):
+    def SetCoords(self, start_pos=-1, end_pos=-1):
         self.start_pos = start_pos
         self.end_pos = end_pos
 
@@ -62,7 +63,7 @@ class ASTree:
 
 def ConnectSame(tree, trees, operation, pos):
     if (len(trees) > 1):
-        tree = Node(value=operation, t='DEFAULT', start_pos=pos, end_pos=(pos + len(operation)))
+        tree = Node(value=operation, t='DEFAULT', start_pos=pos + 1, end_pos=pos + len(operation) + 1)
         for tr in trees:
             tree.AddChild(tr)
     return tree
