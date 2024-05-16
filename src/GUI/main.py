@@ -15,7 +15,6 @@ from Scanner import *
 class MainWindow(QMainWindow):
     def __init__(self):
         super(QMainWindow, self).__init__()
-        # add before init
         self.vcc_path = None
         self.tree_root = None
         self.current_editor = None
@@ -31,7 +30,7 @@ class MainWindow(QMainWindow):
         self.app_name = "Bxx IDE"
         self.setWindowTitle(self.app_name)
         self.resize(1500, 900)
-        self.centerWindow()
+        self.center_window()
 
         root_dir = os.getcwd()
         full_path = os.path.join("static", "css", "style.qss")
@@ -110,7 +109,6 @@ class MainWindow(QMainWindow):
         style_action1.triggered.connect(self.set_style1)
         style_action2.triggered.connect(self.set_style2)
         style_action3.triggered.connect(self.set_style3)
-        # you can add more
 
 
     def get_editor(self, path: Path = None, is_python_file=False, is_VeKrestKrest_file = True) -> QsciScintilla:
@@ -123,9 +121,9 @@ class MainWindow(QMainWindow):
         return editor
 
     def is_binary(self, path):
-        '''
+        """
         Check if file is binary
-        '''
+        """
         with open(path, 'rb') as f:
             return b'\0' in f.read(1024)
 
@@ -137,8 +135,7 @@ class MainWindow(QMainWindow):
         if path.is_dir():
             return
 
-        # add whichever extentions you consider as programming language file
-        editor = self.get_editor(path, path.suffix in {".py", ".pyw"}, path.suffix == ".vcc")
+        editor = self.get_editor(path, path.suffix in {".py", ".pyw", ".vcc"})
 
         if is_new_file:
             self.tab_view.addTab(editor, "untitled")
