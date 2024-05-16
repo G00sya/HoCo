@@ -508,7 +508,7 @@ class MainWindow(QMainWindow):
     def set_style_default(self):
         if self.current_editor is None:
             return
-        self.current_style = os.path.join(os.getcwd(), "..", "..", "static", "theme1.json")
+        self.current_style = os.path.join(os.getcwd(), "static", "theme1.json")
         if self.current_editor.is_VeKrestKrest_file:
             self.current_editor.VeKrestKrestlexer.theme = self.current_style
             self.current_editor.VeKrestKrestlexer._init_theme()
@@ -516,7 +516,7 @@ class MainWindow(QMainWindow):
     def set_style_hack(self):
         if self.current_editor is None:
             return
-        self.current_style = os.path.join(os.getcwd(), "..", "..", "static", "theme2.json")
+        self.current_style = os.path.join(os.getcwd(), "static", "theme2.json")
         if self.current_editor.is_VeKrestKrest_file:
             self.current_editor.VeKrestKrestlexer.theme = self.current_style
             self.current_editor.VeKrestKrestlexer._init_theme()
@@ -524,7 +524,7 @@ class MainWindow(QMainWindow):
     def set_style_pro(self):
         if self.current_editor is None:
             return
-        self.current_style = os.path.join(os.getcwd(), "..", "..", "static", "theme3.json")
+        self.current_style = os.path.join(os.getcwd(), "static", "theme3.json")
         if self.current_editor.is_VeKrestKrest_file:
             self.current_editor.VeKrestKrestlexer.theme = self.current_style
             self.current_editor.VeKrestKrestlexer._init_theme()
