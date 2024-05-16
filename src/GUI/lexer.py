@@ -26,6 +26,7 @@ class NeutronLexer(QsciLexerCustom):
         self.editor = editor
         self.language_name = language_name
         self.theme_json = None
+        # Выбор стилей подсветки
         if theme is None:
             self.theme = os.getcwd() + "\\..\\..\\static\\theme.json"
         else:
@@ -423,20 +424,6 @@ class KrestCustomLexerCoco(NeutronLexer):
 
     def __init__(self, editor):
         super(KrestCustomLexerCoco, self).__init__("Vekrestkrest", editor)
-
-    # def highlightRegion_reg(self, node, highlight_style: int):
-    #     self.startStyling(node.start_pos)
-    #     self.setStyling(node.end_pos - node.start_pos + 1, define_selection(highlight_style))
-    #     print(f'{node.value} was styled, start: {node.start_pos}, end: {node.end_pos}, node_len = {len(node.value)}\n')
-    # def get_real_position(self, start_position, end_position):
-    #     addition = 0
-    #     for i in range(start_position):
-    #         if self.editor.text()[i] == ' ':
-    #             addition += 1
-    #         if self.editor.text()[i] == '\n':
-    #             addition = 0
-    #
-    #     return start_position + addition, end_position + addition
 
     def styleText(self, start: int, end: int):
         self.generate_token_coco(self.editor.text())

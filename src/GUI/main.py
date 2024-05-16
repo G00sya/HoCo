@@ -29,13 +29,14 @@ class MainWindow(QMainWindow):
         # add before init
         self.vcc_path = None
         self.tree_root = None
+        self.current_editor = None
         self.side_bar_clr = "#282c34"
+        self.current_style = None
 
         self.init_ui()
 
         self.current_file = None
         self.current_side_bar = None
-        self.current_editor = None
 
     def init_ui(self):
         self.app_name = "PYQT EDITOR"
@@ -97,6 +98,15 @@ class MainWindow(QMainWindow):
         copy_action = edit_menu.addAction("Copy")
         copy_action.setShortcut("Ctrl+C")
         copy_action.triggered.connect(self.copy)
+
+        # Style menu
+        style_menu = menu_bar.addMenu("Backlight style")
+        style_action1 = style_menu.addAction("Set style 1")
+        style_action2 = style_menu.addAction("Set style 2")
+        style_action3 = style_menu.addAction("Set style 3")
+        style_action1.triggered.connect(self.set_style1)
+        style_action2.triggered.connect(self.set_style2)
+        style_action3.triggered.connect(self.set_style3)
         # you can add more
 
     def get_editor(self, path: Path = None, is_python_file=False, is_VeKrestKrest_file=True) -> QsciScintilla:
@@ -427,6 +437,21 @@ class MainWindow(QMainWindow):
         editor = self.tab_view.currentWidget()
         if editor is not None:
             editor.copy()
+
+    def set_style1(self, style_type):
+        self.current_style = os.getcwd() + "\\..\\..\\static\\theme.json"
+        if self.current_editor.is_VeKrestKrest_file:
+            self.current_editor.VeKrestKrestlexer.theme = self.current_style
+
+    def set_style2(self, style_type):
+        self.current_style = os.getcwd() + "\\..\\..\\static\\theme.json"
+        if self.current_editor.is_VeKrestKrest_file:
+            self.current_editor.VeKrestKrestlexer.theme = self.current_style
+
+    def set_style3(self, style_type):
+        self.current_style = os.getcwd() + "\\..\\..\\static\\theme.json"
+        if self.current_editor.is_VeKrestKrest_file:
+            self.current_editor.VeKrestKrestlexer.theme = self.current_style
 
 
 if __name__ == '__main__':

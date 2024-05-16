@@ -103,10 +103,6 @@ class Editor(QsciScintilla):
         # key press
         # self.keyPressEvent = self.handle_editor_press
 
-    def highlightCode(self, node, highlight_style: int):
-        self.VeKrestKrestlexer.styleText(0, len(self.text()))
-        self.VeKrestKrestlexer.highlightRegion_reg(node, highlight_style)
-
     @property
     def current_file_changed(self):
         return self._current_file_changed
