@@ -1,0 +1,9 @@
+ABSOLUT(CELINA a, CELINA b) -> CELINA {
+CELINA razniza = 0;
+    KOLI (a > b) {
+        razniza = a -b;
+    } OTNUD {
+        razniza = b - a;
+   }
+   VOZDAT razniza;
+}
