@@ -241,7 +241,7 @@ class MainWindow(QMainWindow):
         body_frame.setLayout(body)
 
         ##############################
-        ###### TAB VIEW ##########
+        ###### TAB VIEW ##############
 
         # Tab Widget to add editor to
         self.tab_view = QTabWidget()
@@ -252,7 +252,7 @@ class MainWindow(QMainWindow):
         self.tab_view.tabCloseRequested.connect(self.close_tab)
 
         ##############################
-        ###### SIDE BAR ##########
+        ###### SIDE BAR ##############
         self.side_bar = QFrame()
         self.side_bar.setFrameShape(QFrame.StyledPanel)
         self.side_bar.setFrameShadow(QFrame.Plain)
@@ -289,7 +289,7 @@ class MainWindow(QMainWindow):
         self.file_manager_layout.setContentsMargins(0, 0, 0, 0)
         self.file_manager_layout.setSpacing(0)
 
-        self.file_manager = FileManager(  # Check
+        self.file_manager = FileManager(
             tab_view=self.tab_view,
             set_new_tab=self.set_new_tab,
             main_window=self
@@ -299,7 +299,8 @@ class MainWindow(QMainWindow):
         self.file_manager_layout.addWidget(self.file_manager)
         self.file_manager_frame.setLayout(self.file_manager_layout)
 
-        # create ast
+        ##############################
+        ###### AST TREE ##############
         self.ast_tree = QTreeWidget()
         self.ast_tree.setFrameShape(QFrame.StyledPanel)
         self.ast_tree.setFrameShadow(QFrame.Plain)
@@ -323,7 +324,8 @@ class MainWindow(QMainWindow):
 
         self.ast_tree.itemClicked.connect(lambda item: on_ast_node_selected(item))
 
-        ##############################
+
+        ###############################
         ###### SETUP WIDGETS ##########
 
         # add tree view and tab view
