@@ -21,11 +21,10 @@ IGNORE cr + lf + tab
 
 PRODUCTIONS
   VeKrestKrest<out tree>       = (. main_tree = Node(value='VeKrestKrestProg', t='body') .) 
-                                 { Defenition<out def_tree> (. main_tree.AddChild(def_tree); #AllInfo(def_tree, "../example.txt", True); print('\n' * 2) .)} 
+                                 { Defenition<out def_tree> (. main_tree.AddChild(def_tree) .)} 
                                  (. 
                                     tree = ASTree()
                                     tree.AddNode(main_tree)
-                                    #tree.PrintTree()
                                  .).
 
   Defenition<out defTree>      = identifier (. name = self.token.val; name_pos = self.token.pos .) 
@@ -55,12 +54,12 @@ PRODUCTIONS
                                     fp.AddChild(type)
                                  .) .
 
-  Type<out type>               = (. val = ''; end_pos = -2 .)
-                                 ( "CELINA" (. val = self.token.val; end_pos = self.token.pos .) [ "["ConstExpression"]" ] 
+  Type<out type>               = (. val = ''; end_pos = -2; d = 0 .)
+                                 ( "CELINA" (. val = self.token.val; end_pos = self.token.pos .) [ "[" [ConstExpression] "]" (. val += "[]"; d = 2 .)] 
                                  | "BUKVI"  (. val = self.token.val; end_pos = self.token.pos .)
-                                 | "DROB"   (. val = self.token.val; end_pos = self.token.pos .) [ "["ConstExpression"]" ]
-                                 | "PRAVDA" (. val = self.token.val; end_pos = self.token.pos .) [ "["ConstExpression"]" ] )
-                                 (. type = Node(value='type: ' + val, t='TYPES', start_pos=end_pos - 1, end_pos=end_pos + len(val) - 1) .) .
+                                 | "DROB"   (. val = self.token.val; end_pos = self.token.pos .) [ "[" [ConstExpression] "]" (. val += "[]"; d = 2 .)]  
+                                 | "PRAVDA" (. val = self.token.val; end_pos = self.token.pos .) [ "[" [ConstExpression] "]" (. val += "[]"; d = 2 .)]  )
+                                 (. type = Node(value='type: ' + val, t='TYPES', start_pos=end_pos - 1, end_pos=end_pos + len(val) - 1 - d) .) .
   
   Statement<out tree>          = ( AssignmentExpression<out assigm_tree> (. tree = assigm_tree .)
                                  | CompoundStatement<out cmpd_tree> (. tree = cmpd_tree .) 
@@ -121,7 +120,7 @@ PRODUCTIONS
                                  [ "OTNUD" (. otnud_pos = self.token.pos .) Statement<out else_state_tree> 
                                  (.
                                     else_state_tree.Rename("OTNUD")
-                                    else_state_tree.SetCoords(otnud_pos - 1, otnud_pos - len('otnud') - 1)
+                                    else_state_tree.SetCoords(otnud_pos - 1, otnud_pos + len('otnud') - 1)
                                     else_state_tree.type = 'KEYWORD'
                                     tree.AddChild(else_state_tree)
                                  .) ] .
