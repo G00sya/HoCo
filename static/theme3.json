@@ -2,7 +2,8 @@
     "theme": {
         "name": "default-dark",
         "version": "1.0",
-        
+        "paper": "#282c34",
+
         "syntax": [
             {
                 "default": {
@@ -22,7 +23,7 @@
                     "paper-color": "#282c34",
                     "font": { 
                         "family": "Arial",
-                        "font-size": 22,
+                        "font-size": 14,
                         "font-weight": "normal",
                         "italic": false
                     }

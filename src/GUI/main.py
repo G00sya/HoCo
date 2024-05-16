@@ -103,7 +103,7 @@ class MainWindow(QMainWindow):
         style_menu = menu_bar.addMenu("Backlight style")
         style_action1 = style_menu.addAction("Set style default")
         style_action2 = style_menu.addAction("Set style hack")
-        style_action3 = style_menu.addAction("Set style 3")
+        style_action3 = style_menu.addAction("Set style pro")
         style_action1.triggered.connect(self.set_style_default)
         style_action2.triggered.connect(self.set_style_hack)
         style_action3.triggered.connect(self.set_style_pro)

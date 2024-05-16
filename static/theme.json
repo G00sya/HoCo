@@ -2,7 +2,8 @@
     "theme": {
         "name": "default-dark",
         "version": "1.0",
-        
+        "paper": "#282c34",
+
         "syntax": [
             {
                 "default": {

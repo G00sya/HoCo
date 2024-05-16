@@ -104,6 +104,8 @@ class NeutronLexer(QsciLexerCustom):
         with open(self.theme, "r") as f:
             self.theme_json = json.load(f)
 
+        paper = self.theme_json["theme"]["paper"]
+        self.setPaper(QColor(paper))
         colors = self.theme_json["theme"]["syntax"]
 
         for clr in colors:
