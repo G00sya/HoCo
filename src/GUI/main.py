@@ -1,23 +1,13 @@
-import os
-import ast
-
-import sys
-
-
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
-
 from PyQt5.Qsci import *
-# test
 
-import sys
+import os
 from pathlib import Path
 
 from editor import Editor
 from file_manager import FileManager
-from ast_tree import fill_widget, fill_item
-from AstTree import Node, ASTree
 from Parser import *
 from Scanner import *
 
@@ -26,14 +16,16 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super(QMainWindow, self).__init__()
         # add before init
+        self.vcc_path = None
         self.tree_root = None
+        self.current_editor = None
         self.side_bar_clr = "#282c34"
+        self.current_style = None
 
         self.init_ui()
 
         self.current_file = None
         self.current_side_bar = None
-        self.current_editor = None
 
     def init_ui(self):
         self.app_name = "Bxx IDE"
@@ -57,9 +49,10 @@ class MainWindow(QMainWindow):
         self.set_up_body()
         self.set_up_status_bar()
 
+        self.center_window()
         self.show()
 
-    def centerWindow(self):
+    def center_window(self):
         screen = QDesktopWidget().screenGeometry()
         window_size = self.geometry()
         x = (screen.width() - window_size.width()) // 2
@@ -108,16 +101,23 @@ class MainWindow(QMainWindow):
         copy_action = edit_menu.addAction("Copy")
         copy_action.setShortcut("Ctrl+C")
         copy_action.triggered.connect(self.copy)
+
+        # Style menu
+        style_menu = menu_bar.addMenu("Backlight style")
+        style_action1 = style_menu.addAction("Set style 1")
+        style_action2 = style_menu.addAction("Set style 2")
+        style_action3 = style_menu.addAction("Set style 3")
+        style_action1.triggered.connect(self.set_style1)
+        style_action2.triggered.connect(self.set_style2)
+        style_action3.triggered.connect(self.set_style3)
         # you can add more
 
 
     def get_editor(self, path: Path = None, is_python_file=False, is_VeKrestKrest_file = True) -> QsciScintilla:
         if is_VeKrestKrest_file:
             editor = Editor(self, path=path, is_python_file=False, is_VeKrestKrest_file=True)
-            self.current_editor = editor
         elif is_python_file:
             editor = Editor(self, path=path, is_python_file=True, is_VeKrestKrest_file=False)
-            self.current_editor = editor
         else:
             editor = Editor(self, path=path, is_python_file=False, is_VeKrestKrest_file=False)
         return editor
@@ -158,6 +158,9 @@ class MainWindow(QMainWindow):
         # create new tab
         self.tab_view.addTab(editor, path.name)
         editor.setText(path.read_text(encoding="utf-8"))
+        if path.suffix == ".vcc":
+            self.current_editor = editor
+            self.build_ast(self.current_editor)
         self.setWindowTitle(f"{path.name} - {self.app_name}")
         self.current_file = path
         self.tab_view.setCurrentIndex(self.tab_view.count() - 1)
@@ -199,7 +202,7 @@ class MainWindow(QMainWindow):
         ''')
         return frame
 
-    def build_ast(self):
+    def build_ast(self, editor):
         def clear_widget(tree_widget):
             tree_widget.clear()
 
@@ -213,13 +216,10 @@ class MainWindow(QMainWindow):
 
             item.setExpanded(True)
 
-        s = open(self.srcName_vcc, 'r', encoding='utf-8')
-        code = s.read()
-        self.code_len = len(code)
+        code = editor.text()
         scanner = Scanner(code)
         parser = Parser()
         ast_tree_code = parser.Parse(scanner)
-        ast_tree_code.PrintTree()
         self.tree_root = ast_tree_code.GetRoot()
 
         clear_widget(self.ast_tree)
@@ -242,7 +242,7 @@ class MainWindow(QMainWindow):
         body_frame.setLayout(body)
 
         ##############################
-        ###### TAB VIEW ##########
+        ###### TAB VIEW ##############
 
         # Tab Widget to add editor to
         self.tab_view = QTabWidget()
@@ -253,7 +253,7 @@ class MainWindow(QMainWindow):
         self.tab_view.tabCloseRequested.connect(self.close_tab)
 
         ##############################
-        ###### SIDE BAR ##########
+        ###### SIDE BAR ##############
         self.side_bar = QFrame()
         self.side_bar.setFrameShape(QFrame.StyledPanel)
         self.side_bar.setFrameShadow(QFrame.Plain)
@@ -290,7 +290,7 @@ class MainWindow(QMainWindow):
         self.file_manager_layout.setContentsMargins(0, 0, 0, 0)
         self.file_manager_layout.setSpacing(0)
 
-        self.file_manager = FileManager(  # Check
+        self.file_manager = FileManager(
             tab_view=self.tab_view,
             set_new_tab=self.set_new_tab,
             main_window=self
@@ -305,7 +305,6 @@ class MainWindow(QMainWindow):
         self.ast_tree = QTreeWidget()
         self.ast_tree.setFrameShape(QFrame.StyledPanel)
         self.ast_tree.setFrameShadow(QFrame.Plain)
-        # self.ast_tree.setMaximumWidth(700)
         self.ast_tree.setStyleSheet(f'''
                           background-color: {self.side_bar_clr};
                           color: #abb2bf;
@@ -316,31 +315,16 @@ class MainWindow(QMainWindow):
         # configuring the header
         self.ast_tree.setHeaderLabel("Ast tree")
 
-        root_dir = os.getcwd()
-        full_path = os.path.join("examples", "example.vcc")
-        self.srcName_vcc = os.path.join(root_dir, full_path)
-        self.build_ast()
 
         def on_ast_node_selected(item):
-
-            root_dir = os.getcwd()
-            full_path = os.path.join("examples", "example.vcc")
-            path = os.path.join(root_dir, full_path)
-
-            is_open = 0
-            for i in range(self.tab_view.count()):
-                if self.tab_view.tabText(i) == path.name or self.tab_view.tabText(i) == "*" + path.name:
-                    is_open = 1
-            if not is_open:
-                self.set_new_tab(path)
             node = item.data(0, Qt.UserRole)
-            start_pos = node.start_pos
-            end_pos = node.end_pos
-            # Выделение выбранной лексемы в редакторе
-            self.current_editor.VeKrestKrestlexer.styleText(0, self.code_len) # TODO
-            self.current_editor.highlightCode(start_pos, end_pos, 9)
+            start_line, start_index = self.current_editor.lineIndexFromPosition(node.start_pos + 1)
+            end_line, end_index = self.current_editor.lineIndexFromPosition(node.end_pos + 1)
+
+            self.current_editor.setSelection(start_line, start_index, end_line, end_index)
 
         self.ast_tree.itemClicked.connect(lambda item: on_ast_node_selected(item))
+
 
         ###############################
         ###### SETUP WIDGETS ##########
@@ -356,6 +340,11 @@ class MainWindow(QMainWindow):
         body_frame.setLayout(body)
 
         self.setCentralWidget(body_frame)
+
+    def resizeEvent(self, event):
+        new_width = event.size().width()
+        self.ast_tree.setMaximumWidth(int(new_width / 5 * 2))
+        super().resizeEvent(event)
 
     def show_dialog(self, title, msg) -> int:
         dialog = QMessageBox(self)
@@ -378,6 +367,7 @@ class MainWindow(QMainWindow):
             if dialog == QMessageBox.Yes:
                 self.save_file()
 
+        self.ast_tree.clear()
         self.tab_view.removeTab(index)
 
     def show_hide_tab(self, e, type_):
@@ -409,7 +399,7 @@ class MainWindow(QMainWindow):
 
         editor = self.tab_view.currentWidget()
         self.current_file.write_text(editor.text())
-        self.build_ast()
+        self.build_ast(editor)
         self.statusBar().showMessage(f"Saved {self.current_file.name}", 2000)
         editor.current_file_changed = False
 
@@ -423,6 +413,7 @@ class MainWindow(QMainWindow):
         if file_path == '':
             self.statusBar().showMessage("Cancelled", 2000)
             return
+
         path = Path(file_path)
         path.write_text(editor.text())
         self.tab_view.setTabText(self.tab_view.currentIndex(), path.name)
@@ -459,6 +450,27 @@ class MainWindow(QMainWindow):
         editor = self.tab_view.currentWidget()
         if editor is not None:
             editor.copy()
+
+    def set_style1(self, style_type):
+        if self.current_editor is None:
+            return
+        self.current_style = os.path.join(os.getcwd(), "..", "..", "static", "theme.json")
+        if self.current_editor.is_VeKrestKrest_file:
+            self.current_editor.VeKrestKrestlexer.theme = self.current_style
+
+    def set_style2(self, style_type):
+        if self.current_editor is None:
+            return
+        self.current_style = os.path.join(os.getcwd(), "..", "..", "static", "theme.json")
+        if self.current_editor.is_VeKrestKrest_file:
+            self.current_editor.VeKrestKrestlexer.theme = self.current_style
+
+    def set_style3(self, style_type):
+        if self.current_editor is None:
+            return
+        self.current_style = os.path.join(os.getcwd(), "..", "..", "static", "theme.json")
+        if self.current_editor.is_VeKrestKrest_file:
+            self.current_editor.VeKrestKrestlexer.theme = self.current_style
 
 
 if __name__ == '__main__':
