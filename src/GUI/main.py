@@ -48,7 +48,16 @@ class MainWindow(QMainWindow):
         self.set_up_body()
         self.set_up_status_bar()
 
+        self.center_window()
         self.show()
+
+    def center_window(self):
+        screen = QDesktopWidget().screenGeometry()
+        window_size = self.geometry()
+        x = (screen.width() - window_size.width()) // 2
+        y = (screen.height() - window_size.height()) // 2
+
+        self.move(x, y)
 
     def set_up_status_bar(self):
         # Create status bar
