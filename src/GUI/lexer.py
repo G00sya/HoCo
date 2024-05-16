@@ -1,17 +1,16 @@
 import os
+import sys
 import re
 import keyword
 import builtins
 import types
 import json
 
-from PyQt5.Qsci import QsciLexerCustom, QsciScintilla
+from PyQt5.Qsci import QsciLexerCustom
 from PyQt5.QtGui import QFont, QColor
-from PyQt5.QtCore import *
-from PyQt5.QtWidgets import *
 
-from Parser import *
-from Scanner import *
+from parser.Parser import *
+from parser.Scanner import *
 
 # config type
 DefaultConfig = dict[str, str, tuple[str, int]]
@@ -26,6 +25,7 @@ class NeutronLexer(QsciLexerCustom):
         self.editor = editor
         self.language_name = language_name
         self.theme_json = None
+        # Выбор стилей подсветки
         if theme is None:
             root_dir = os.getcwd()
             full_path = os.path.join("static", "theme.json")
@@ -106,6 +106,8 @@ class NeutronLexer(QsciLexerCustom):
         with open(self.theme, "r") as f:
             self.theme_json = json.load(f)
 
+        paper = self.theme_json["theme"]["paper"]
+        self.setPaper(QColor(paper))
         colors = self.theme_json["theme"]["syntax"]
 
         for clr in colors:
@@ -124,10 +126,10 @@ class NeutronLexer(QsciLexerCustom):
                     try:
                         self.setFont(
                             QFont(
-                                v.get("family", "Consolas"),
-                                v.get("font-size", 14),
-                                self.font_weights.get(v.get("font-weight", QFont.Normal)),
-                                v.get("italic", False)
+                                v.get("family"),
+                                v.get("font-size"),
+                                self.font_weights.get(v.get("font-weight")),
+                                v.get("italic")
                             ),
                             getattr(self, name.upper())
                         )
@@ -326,16 +328,7 @@ class KrestCustomLexer(NeutronLexer):
 
     def highlightRegion_reg(self, start: int, end: int, highlight_style: int):
         self.startStyling(start)
-        text = self.editor.text()[start:end]
-        self.generate_token_regular(text)
-        self.setStyling(len(text), highlight_style)
-        while start < end:
-            curr_token = self.next_tok()
-            if curr_token is None:
-                break
-            tok, tok_len = curr_token
-            self.setStyling(tok_len, highlight_style)
-            start += tok_len
+        self.setStyling(end - start + 1, 1)
 
     def styleText(self, start: int, end: int) -> None:
         # 1. Start styling procedure
@@ -405,26 +398,55 @@ class KrestCustomLexer(NeutronLexer):
                 self.setStyling(tok_len, self.DEFAULT)
 
 
+def define_selection(type):
+    if type == "DEFAULT":
+        return 0
+    elif type == "KEYWORD" or type == "OPERATORS":
+        return 1
+    elif type == "TYPES":
+        return 2
+    elif type == "STRING":
+        return 3
+    elif type == "KEYARG":
+        return 4
+    elif type == "BRACKETS":
+        return 5
+    elif type == "COMMENTS":
+        return 6
+    elif type == "CONSTANTS" or type == "IDENTIFIER":
+        return 7
+    elif type == "FUNCTIONS":
+        return 8
+    elif type == "GRAMMAR_CONSTRUCTION":
+        return 9
+    else:
+        return 0
+
+
 class KrestCustomLexerCoco(NeutronLexer):
     """Custom lexer for Vekrestkrest"""
 
     def __init__(self, editor):
         super(KrestCustomLexerCoco, self).__init__("Vekrestkrest", editor)
 
-        self.keywords = ["VOZDAT", "KOLI", "DOKOLE", "ALI", "DA", "OTNUD"]
-        self.builtin_names = ["CELINA", "BUKVI", "DROB", "PRAVDA"]
+    def styleText(self, start: int, end: int):
+        if self.editor._current_file_changed == False:
+            # self.generate_token_coco(self.editor.text())
+            for element in self.token_list:
+                if element.type != "GRAMMAR_CONSTRUCTION" and element.type != "BRACKETS":
+                    self.startStyling(element.start_pos + 1)
+                    self.setStyling(element.end_pos - element.start_pos, define_selection(element.type))
+                    # print(
+                    #     f'{element.value} was styled, start: {element.start_pos}, end: {element.end_pos}, type = {element.type}\n')
 
-        self.setKeywords(self.keywords)
-        self.setBuiltinNames(self.builtin_names)
-
-    def highlightRegion_reg(self, start: int, end: int, highlight_style: int):
-        self.startStyling(start)
-        text = self.editor.text()[start:end]
-        self.setStyling(len(text), highlight_style)
-
-    def styleText(self, start: int, end: int) -> None:
-        for element in self.token_list:
-            if element.start_pos != -1:
-                self.startStyling(element.start_pos)
-                self.setStyling(len(element.value), 1)
+            for i in range(len(self.editor.text())):
+                if self.editor.text()[i] in ['(', ')', '{', '}', '[', ']']:
+                    self.startStyling(i)
+                    self.setStyling(1, define_selection("BRACKETS"))
+                if self.editor.text()[i] == ';':
+                    self.startStyling(i)
+                    self.setStyling(1, define_selection("DEFAULT"))
+        else:
+            self.startStyling(0)
+            self.setStyling(len(self.editor.text()), define_selection("DEFAULT"))
 

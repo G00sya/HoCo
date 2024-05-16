@@ -10,9 +10,9 @@
                     "color": "#abb2bf",
                     "paper-color": "#282c34",
                     "font": { 
-                        "family": "consolas",
+                        "family": "Arial",
                         "font-size": 14,
-                        "font-weight": "bold",
+                        "font-weight": "normal",
                         "italic": false
                     }
                 }
@@ -22,9 +22,9 @@
                     "color": "#c678dd",
                     "paper-color": "#282c34",
                     "font": { 
-                        "family": "consolas",
+                        "family": "Arial",
                         "font-size": 14,
-                        "font-weight": "bold",
+                        "font-weight": "normal",
                         "italic": false
                     }
                 }
@@ -34,9 +34,9 @@
                     "color": "#C68F55",
                     "paper-color": "#282c34",
                     "font": { 
-                        "family": "consolas",
+                        "family": "Arial",
                         "font-size": 14,
-                        "font-weight": "bold",
+                        "font-weight": "normal",
                         "italic": false
                     }
                 }
@@ -46,9 +46,9 @@
                     "color": "#61afd1",
                     "paper-color": "#282c34",
                     "font": { 
-                        "family": "consolas",
+                        "family": "Arial",
                         "font-size": 14,
-                        "font-weight": "bold",
+                        "font-weight": "normal",
                         "italic": false
                     }
                 }
@@ -58,9 +58,9 @@
                     "color": "#61afd1",
                     "paper-color": "#282c34",
                     "font": { 
-                        "family": "consolas",
+                        "family": "Arial",
                         "font-size": 14,
-                        "font-weight": "bold",
+                        "font-weight": "normal",
                         "italic": true
                     }
                 }
