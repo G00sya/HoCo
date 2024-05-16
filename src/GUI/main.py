@@ -99,8 +99,6 @@ class MainWindow(QMainWindow):
         copy_action.setShortcut("Ctrl+C")
         copy_action.triggered.connect(self.copy)
 
-
-
         # Style menu
         style_menu = menu_bar.addMenu("Backlight style")
 
@@ -145,7 +143,9 @@ class MainWindow(QMainWindow):
     def show_settings_dialog(self, type):
         color = QColorDialog.getColor()
         if self.current_editor.is_VeKrestKrest_file:
-            self.current_editor.VeKrestKrestlexer.setColor(color, getattr(self.current_editor.VeKrestKrestlexer, type.upper()))
+            self.current_editor.VeKrestKrestlexer.setColor(color,
+                                                           getattr(self.current_editor.VeKrestKrestlexer, type.upper()))
+
     # you can add more
 
     def get_editor(self, path: Path = None, is_python_file=False, is_VeKrestKrest_file=True) -> QsciScintilla:
@@ -195,7 +195,6 @@ class MainWindow(QMainWindow):
             self.current_editor = editor
             self.build_ast(self.current_editor)
             self.current_editor.VeKrestKrestlexer.generate_token_coco(self.current_editor.text())
-
 
         self.setWindowTitle(f"{path.name} - {self.app_name}")
         self.current_file = path
@@ -434,17 +433,18 @@ class MainWindow(QMainWindow):
         if self.current_file is None and self.tab_view.count() > 0:
             self.save_as()
 
-        editor = self.tab_view.currentWidget()
-        self.current_file.write_text(editor.text())
-        self.build_ast(editor)
+        self.current_editor = self.tab_view.currentWidget()
+        self.current_file.write_text(self.current_editor.text())
+        self.build_ast(self.current_editor)
         self.current_editor.VeKrestKrestlexer.generate_token_coco(self.current_editor.text())
         self.statusBar().showMessage(f"Saved {self.current_file.name}", 2000)
-        editor.current_file_changed = False
+        self.current_editor.current_file_changed = False
+        self.current_editor.VeKrestKrestlexer.styleText(self.current_editor.text()[0], self.current_editor.text()[-1])
 
     def save_as(self):
         # save as
-        editor = self.tab_view.currentWidget()
-        if editor is None:
+        self.current_editor = self.tab_view.currentWidget()
+        if self.current_editor is None:
             return
 
         file_path = QFileDialog.getSaveFileName(self, "Save As", os.getcwd())[0]
@@ -453,11 +453,12 @@ class MainWindow(QMainWindow):
             return
 
         path = Path(file_path)
-        path.write_text(editor.text())
+        path.write_text(self.current_editor.text())
         self.tab_view.setTabText(self.tab_view.currentIndex(), path.name)
         self.statusBar().showMessage(f"Saved {path.name}", 2000)
         self.current_file = path
-        editor.current_file_changed = False
+        self.current_editor.current_file_changed = False
+        self.current_editor.VeKrestKrestlexer.styleText(self.current_editor.text()[0], self.current_editor.text()[-1])
 
     def open_file(self):
         # open file

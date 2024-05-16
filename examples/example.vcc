@@ -2,12 +2,14 @@ a(CELINA b) -> CELINA {
     VOZDAT 2 * b DA 3 < 1;
 }
 
-f() -> CELINA {
+f() -> CELINA { 
+    CELINA f2 = 4;
     CELINA f1 = 3;
     CELINA b = func(4 + 1 * f1) + a(1);
     BUKVI buk = "12";
     VOZDAT b * f1;
 }
+
 
 main(CELINA argc) -> CELINA {
     VOZDAT 0;

@@ -428,18 +428,23 @@ class KrestCustomLexerCoco(NeutronLexer):
         super(KrestCustomLexerCoco, self).__init__("Vekrestkrest", editor)
 
     def styleText(self, start: int, end: int):
-        # self.generate_token_coco(self.editor.text())
-        for element in self.token_list:
-            if element.type != "GRAMMAR_CONSTRUCTION" and element.type != "BRACKETS":
-                self.startStyling(element.start_pos + 1)
-                self.setStyling(element.end_pos - element.start_pos, define_selection(element.type))
-                # print(
-                #     f'{element.value} was styled, start: {element.start_pos}, end: {element.end_pos}, type = {element.type}\n')
+        if self.editor._current_file_changed == False:
+            # self.generate_token_coco(self.editor.text())
+            for element in self.token_list:
+                if element.type != "GRAMMAR_CONSTRUCTION" and element.type != "BRACKETS":
+                    self.startStyling(element.start_pos + 1)
+                    self.setStyling(element.end_pos - element.start_pos, define_selection(element.type))
+                    # print(
+                    #     f'{element.value} was styled, start: {element.start_pos}, end: {element.end_pos}, type = {element.type}\n')
 
-        for i in range(len(self.editor.text())):
-            if self.editor.text()[i] in ['(', ')', '{', '}', '[', ']']:
-                self.startStyling(i)
-                self.setStyling(1, define_selection("BRACKETS"))
-            if self.editor.text()[i] == ';':
-                self.startStyling(i)
-                self.setStyling(1, define_selection("DEFAULT"))
+            for i in range(len(self.editor.text())):
+                if self.editor.text()[i] in ['(', ')', '{', '}', '[', ']']:
+                    self.startStyling(i)
+                    self.setStyling(1, define_selection("BRACKETS"))
+                if self.editor.text()[i] == ';':
+                    self.startStyling(i)
+                    self.setStyling(1, define_selection("DEFAULT"))
+        else:
+            self.startStyling(0)
+            self.setStyling(len(self.editor.text()), define_selection("DEFAULT"))
+
