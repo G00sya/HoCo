@@ -34,4 +34,5 @@ RUN cd build \
     cd .. \
     coco ../src/parser/grammar.atg \
     python3 cocor_corrector.py \
+    cp Parser.py ../src/parser/Parser.py \
     cd ..
