@@ -55,7 +55,8 @@ PRODUCTIONS
                                     fp.AddChild(type)
                                  .) .
 
-  Type<out type>               = ( "CELINA" (. val = self.token.val; end_pos = self.token.pos .) [ "["ConstExpression"]" ] 
+  Type<out type>               = (. val = ''; end_pos = -2 .)
+                                 ( "CELINA" (. val = self.token.val; end_pos = self.token.pos .) [ "["ConstExpression"]" ] 
                                  | "BUKVI"  (. val = self.token.val; end_pos = self.token.pos .)
                                  | "DROB"   (. val = self.token.val; end_pos = self.token.pos .) [ "["ConstExpression"]" ]
                                  | "PRAVDA" (. val = self.token.val; end_pos = self.token.pos .) [ "["ConstExpression"]" ] )
@@ -117,9 +118,11 @@ PRODUCTIONS
                                     state_tree.Rename("statements")
                                     tree.AddChild(state_tree)
                                  .)
-                                 [ "OTNUD" Statement<out else_state_tree> 
+                                 [ "OTNUD" (. otnud_pos = self.token.pos .) Statement<out else_state_tree> 
                                  (.
                                     else_state_tree.Rename("OTNUD")
+                                    else_state_tree.SetCoords(otnud_pos - 1, otnud_pos - len('otnud') - 1)
+                                    else_state_tree.type = 'KEYWORD'
                                     tree.AddChild(else_state_tree)
                                  .) ] .
   
@@ -215,7 +218,7 @@ PRODUCTIONS
                                  { "[" Expression<out expression_tree> "]" (. tree.AddChild(expression_tree) .)
                                  | FunctionCall<out f_call_tree>           (. tree = f_call_tree .) }.
 
-  Primary<out prim>            = identifier   (. prim = Node(value=self.token.val, t='IDENTIFIER', start_pos=self.token.pos - 1, end_pos= self.token.pos + len(self.token.val) - 1) .) 
+  Primary<out prim>            = identifier   (. prim = Node(value=self.token.val, t='KEYARG', start_pos=self.token.pos - 1, end_pos= self.token.pos + len(self.token.val) - 1) .) 
                                  | string     (. prim = Node(value=self.token.val, t='STRING', start_pos=self.token.pos - 1, end_pos= self.token.pos + len(self.token.val) - 1) .) 
                                  | number     (. prim = Node(value=self.token.val, t='CONSTANTS', start_pos=self.token.pos - 1, end_pos= self.token.pos + len(self.token.val) - 1)  .) 
                                  | "(" (. start_pos = self.token.pos .) Expression<out tree> ")" (. end_pos = self.token.pos .)
