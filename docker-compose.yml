@@ -1,20 +1,14 @@
 version: '3'
 
 services:
-  hoco:
+  bxx_ide:
     build:
       context: ""
       dockerfile: Dockerfile
-    container_name: HoCo
-    network_mode: "host"
-    environment:
-      - DISPLAY
+    container_name: bxx_ide
     volumes:
-      - /tmp/.X11-unix:/tmp/.X11-unix:rw
-      - $HOME/.Xauthority:/root/.Xauthority
-      - ./src:/app
-    devices:
-      - /dev/dri
-    privileged: true
-    command:
-      python3 GUI/main.py
+      - /tmp/.X11-unix:/tmp/.X11-unix
+    environment:
+      - DISPLAY=$DISPLAY
+    user: user
+    command: python3 src/GUI/main.py
