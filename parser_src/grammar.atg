@@ -127,19 +127,37 @@ PRODUCTIONS
   Conditional<out tree>        = LogORExp<out tree>.
 
   LogORExp<out tree>           = LogANDExp<out and_tree_1> (. tree = and_tree_1 .)
-                                 (. trees = [and_tree_1]; start_pos = 0 .)
-                                 { (. start_pos = self.token.pos .) "ALI" LogANDExp<out and_tree_2> (. trees.append(and_tree_2) .)}
-                                 (. tree = ConnectSame(tree, trees, 'ALI', start_pos) .) .
+                                 (. trees = [and_tree_1]; ops = []; positions = [] .) 
+                                 { "ALI" (. end_pos = self.token.pos .) LogANDExp<out and_tree_2> 
+                                 (. 
+                                    op = 'ALI'
+                                    ops.append(op)
+                                    positions.append((end_pos - len(op), end_pos))
+                                    trees.append(and_tree_2) 
+                                 .)}  
+                                 (. tree = ConnectWithOps(tree, trees, ops, positions) .) .
 
   LogANDExp<out tree>          = EqualExp<out eq_tree_1> (. tree = eq_tree_1 .)
-                                 (. trees = [eq_tree_1]; start_pos = 0 .)
-                                 { (. start_pos = self.token.pos .) "DA" EqualExp<out eq_tree_2> (. trees.append(eq_tree_2) .)} 
-                                 (. tree = ConnectSame(tree, trees, 'DA', start_pos) .) .
+                                 (. trees = [eq_tree_1]; ops = []; positions = [] .) 
+                                 { "DA"  (. end_pos = self.token.pos .) EqualExp<out eq_tree_2>
+                                 (. 
+                                    op = 'DA'
+                                    ops.append(op)
+                                    positions.append((end_pos - len(op), end_pos))
+                                    trees.append(eq_tree_2) 
+                                 .)}  
+                                 (. tree = ConnectWithOps(tree, trees, ops, positions) .) .
 
   EqualExp<out tree>           = RelationExp<out rel_tree_1> (. tree = rel_tree_1 .)
-                                 (. trees = [rel_tree_1]; start_pos = 0 .)
-                                 { (. start_pos = self.token.pos .) "=="  RelationExp<out rel_tree_2> (. trees.append(rel_tree_2) .)}  
-                                 (. tree = ConnectSame(tree, trees, '==', start_pos) .) .
+                                 (. trees = [rel_tree_1]; ops = []; positions = [] .) 
+                                 { "==" (. end_pos = self.token.pos .) RelationExp<out rel_tree_2> 
+                                 (. 
+                                    op = '=='
+                                    ops.append(op)
+                                    positions.append((end_pos - len(op), end_pos))
+                                    trees.append(rel_tree_2) 
+                                 .)}  
+                                 (. tree = ConnectWithOps(tree, trees, ops, positions) .) .
 
   RelationExp<out tree>        = AddExp<out sub_tree_1> (. tree = sub_tree_1 .)
                                  (. trees = [sub_tree_1]; ops = []; positions = [] .) 
