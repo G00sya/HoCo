@@ -25,6 +25,7 @@ PRODUCTIONS
                                  (. 
                                     tree = ASTree()
                                     tree.AddNode(main_tree)
+                                    #tree.PrintTree()
                                  .).
 
   Defenition<out defTree>      = identifier (. name = self.token.val; name_pos = self.token.pos .) 
@@ -132,18 +133,18 @@ PRODUCTIONS
                                  (. 
                                     op = 'ALI'
                                     ops.append(op)
-                                    positions.append((end_pos - len(op), end_pos))
+                                    positions.append((end_pos - 1, end_pos + len(op) - 1))
                                     trees.append(and_tree_2) 
                                  .)}  
                                  (. tree = ConnectWithOps(tree, trees, ops, positions) .) .
 
   LogANDExp<out tree>          = EqualExp<out eq_tree_1> (. tree = eq_tree_1 .)
                                  (. trees = [eq_tree_1]; ops = []; positions = [] .) 
-                                 { "DA"  (. end_pos = self.token.pos .) EqualExp<out eq_tree_2>
+                                 { "DA" (. end_pos = self.token.pos .) EqualExp<out eq_tree_2>
                                  (. 
                                     op = 'DA'
                                     ops.append(op)
-                                    positions.append((end_pos - len(op), end_pos))
+                                    positions.append((end_pos - 1, end_pos + len(op) - 1))
                                     trees.append(eq_tree_2) 
                                  .)}  
                                  (. tree = ConnectWithOps(tree, trees, ops, positions) .) .
@@ -154,7 +155,7 @@ PRODUCTIONS
                                  (. 
                                     op = '=='
                                     ops.append(op)
-                                    positions.append((end_pos - len(op), end_pos))
+                                    positions.append((end_pos - 1, end_pos + len(op) - 1))
                                     trees.append(rel_tree_2) 
                                  .)}  
                                  (. tree = ConnectWithOps(tree, trees, ops, positions) .) .
