@@ -1,28 +1,36 @@
-# Проект по созданию языка программирования для умного дома
+## Запуск проекта
 
-#  Окружение
+## Docker
 
-Установка окружения
-
-```bash
-pip install -r requirements.txt
+Для создания образа и одновременного запуская контейнера с IDE запустите:
+```commandline
+sudo docker compose up --build
 ```
 
-Установка гит хуков
-```bash
-pip install pre-commit
-pre-commit install --install-hooks
+Для того чтобы запустить контейнер по созданному образу, используйте:
+```commandline
+sudo docker compose up
 ```
 
-Ручной запуск хуков
-```bash
-pre-commit run --show-diff-on-failure --color=always --all-files
+### Linux
+
+Установите файлы CocoR, виртуальное окружение и все необходимые библиотеки с помощью: 
+```commandline
+build/setup.sh
 ```
 
-Обновление пакетов в окружении
-```bash
-pip install pip-tools
-pip-sync requirements.txt
+После этого запустите основную программу:
+```commandline
+python3 src/GUI/main.py 
 ```
 
-Для работы необходимо скачать Coco.exe, Scanner.frame, Parser.frame с https://ssw.jku.at/Research/Projects/Coco/ для c++
+### Windows
+
+Установите файлы CocoR, виртуальное окружение и все необходимые библиотеки с помощью: 
+```commandline
+build/setup.bat
+```
+После этого запустите основную программу в файле: 
+```
+src/GUI/main.py
+``` 

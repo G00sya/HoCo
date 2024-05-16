@@ -1,0 +1,14 @@
+version: '3'
+
+services:
+  bxx_ide:
+    build:
+      context: ""
+      dockerfile: Dockerfile
+    container_name: bxx_ide
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+    environment:
+      - DISPLAY=$DISPLAY
+    user: user
+    command: python3 src/GUI/main.py

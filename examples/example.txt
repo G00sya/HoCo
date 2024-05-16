@@ -1,0 +1,33 @@
+a(CELINA b) -> CELINA {
+    VOZDAT 200 * b DA 3 < 1;
+}
+
+f() -> CELINA {
+    CELINA f1 = 3;
+    CELINA b = func(5 + 1 * f1) + a(1);
+    BUKVI buk = "123";
+    buk *= 3;
+    VOZDAT b * f1;
+}
+
+main(CELINA argc) -> CELINA {
+    VOZDAT 0;
+}
+
+delt(CELINA a, CELINA b) -> CELINA {
+    CELINA d = (3 + 1) * 2 / 2 * 2;
+
+    KOLI (b > a) {
+        d = b - a;
+    } OTNUD {
+        d = a - b;
+    }
+
+    CELINA i = 0;
+    DOKOLE (i < d < d < d) {
+        print(1 + 1 + 1 - 1);
+        i += 1;
+    }
+
+    VOZDAT 1 ALI 0 ALI 3 DA 4 DA 1;
+}

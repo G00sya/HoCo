@@ -7,7 +7,7 @@ from PyQt5.Qsci import *
 import keyword
 import pkgutil
 from pathlib import Path
-from lexer import PyCustomLexer, KrestCustomLexer
+from lexer import PyCustomLexer, KrestCustomLexer, KrestCustomLexerCoco
 from autcompleter import AutoCompleter
 from typing import TYPE_CHECKING
 
@@ -30,6 +30,7 @@ class Editor(QsciScintilla):
         self.full_path = self.path.absolute()
         self.is_python_file = is_python_file
         self.is_VeKrestKrest_file = is_VeKrestKrest_file
+        self.VeKrestKrestlexer = None
 
         # EDITOR
         self.cursorPositionChanged.connect(self._cusorPositionChanged)
@@ -101,6 +102,11 @@ class Editor(QsciScintilla):
 
         # key press
         # self.keyPressEvent = self.handle_editor_press
+
+    def highlightCode(self, start_pos: int, end_pos: int, highlight_style: int):
+        self.VeKrestKrestlexer.highlightRegion_reg(start_pos, end_pos, highlight_style)
+        self.VeKrestKrestlexer.generate_token_regular(self.text())
+
 
     @property
     def current_file_changed(self):

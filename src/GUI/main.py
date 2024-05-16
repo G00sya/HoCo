@@ -1,5 +1,9 @@
 import os
 import ast
+
+import sys
+
+
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -13,25 +17,34 @@ from pathlib import Path
 from editor import Editor
 from file_manager import FileManager
 from ast_tree import fill_widget, fill_item
+from AstTree import Node, ASTree
+from Parser import *
+from Scanner import *
 
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super(QMainWindow, self).__init__()
         # add before init
+        self.tree_root = None
         self.side_bar_clr = "#282c34"
 
         self.init_ui()
 
         self.current_file = None
         self.current_side_bar = None
+        self.current_editor = None
 
     def init_ui(self):
         self.app_name = "PYQT EDITOR"
         self.setWindowTitle(self.app_name)
         self.resize(1300, 900)
 
-        self.setStyleSheet(open(os.getcwd() + "\\..\\..\\static\\css\\style.qss", "r").read())
+        root_dir = os.getcwd()
+        full_path = os.path.join("static", "css", "style.qss")
+        absolute_path = os.path.join(root_dir, full_path)
+
+        self.setStyleSheet(open(absolute_path, "r").read())
 
         # alternative Consolas font
         self.window_font = QFont(
@@ -88,11 +101,16 @@ class MainWindow(QMainWindow):
         copy_action.triggered.connect(self.copy)
         # you can add more
 
+
     def get_editor(self, path: Path = None, is_python_file=False, is_VeKrestKrest_file = True) -> QsciScintilla:
         if is_VeKrestKrest_file:
             editor = Editor(self, path=path, is_python_file=False, is_VeKrestKrest_file=True)
+            self.current_editor = editor
         elif is_python_file:
             editor = Editor(self, path=path, is_python_file=True, is_VeKrestKrest_file=False)
+            self.current_editor = editor
+        else:
+            editor = Editor(self, path=path, is_python_file=False, is_VeKrestKrest_file=False)
         return editor
 
     def is_binary(self, path):
@@ -172,6 +190,33 @@ class MainWindow(QMainWindow):
         ''')
         return frame
 
+    def build_ast(self):
+        def clear_widget(tree_widget):
+            tree_widget.clear()
+
+        def fill_widget(tree_widget, node, depth=0):
+            item = QTreeWidgetItem(tree_widget)
+            item.setText(0, node.value)
+            item.setData(0, Qt.UserRole, node)
+
+            for child_node in node.childs:
+                fill_widget(item, child_node, depth + 1)
+
+            item.setExpanded(True)
+
+        s = open(self.srcName_vcc, 'r', encoding='utf-8')
+        code = s.read()
+        self.code_len = len(code)
+        scanner = Scanner(code)
+        parser = Parser()
+        ast_tree_code = parser.Parse(scanner)
+        ast_tree_code.PrintTree()
+        self.tree_root = ast_tree_code.GetRoot()
+
+        clear_widget(self.ast_tree)
+
+        fill_widget(self.ast_tree, self.tree_root, 0)
+
     def set_up_body(self):
 
         # Body
@@ -211,12 +256,13 @@ class MainWindow(QMainWindow):
         side_bar_layout.setSpacing(0)
         side_bar_layout.setAlignment(Qt.AlignTop | Qt.AlignCenter)
 
-        # setup labels
-        folder_label = self.get_side_bar_label(os.getcwd() + "/static/icons/folder-icon-blue.svg", "folder-icon")
-        side_bar_layout.addWidget(folder_label)
 
-        # search_label = self.get_side_bar_label("./src/icons/search-icon", "search-icon")
-        # side_bar_layout.addWidget(search_label)
+        root_dir = os.getcwd()
+        full_path = os.path.join("static", "icons", "folder-icon-blue.svg")
+        absolute_path = os.path.join(root_dir, full_path)
+
+        folder_label = self.get_side_bar_label(absolute_path, "folder-icon")
+        side_bar_layout.addWidget(folder_label)
 
         self.side_bar.setLayout(side_bar_layout)
 
@@ -245,13 +291,45 @@ class MainWindow(QMainWindow):
         self.file_manager_layout.addWidget(self.file_manager)
         self.file_manager_frame.setLayout(self.file_manager_layout)
 
-
-        # Parse some code into an AST
-        code = 'print("Hello world")'
-        parsed_code = ast.parse(code)
-        ast_dict = ast.dump(parsed_code, indent=4)
+        # create ast
         self.ast_tree = QTreeWidget()
-        fill_widget(self.ast_tree, ast_dict)
+        self.ast_tree.setFrameShape(QFrame.StyledPanel)
+        self.ast_tree.setFrameShadow(QFrame.Plain)
+        self.ast_tree.setStyleSheet(f'''
+                          background-color: {self.side_bar_clr};
+                          color: #30d5c8;
+                          font: 12pt 'Fire Code'; 
+                          font-weight: bold;
+                      ''')
+
+        # configuring the header
+        self.ast_tree.setHeaderLabel("Ast tree")
+
+        root_dir = os.getcwd()
+        full_path = os.path.join("examples", "example.vcc")
+        self.srcName_vcc = os.path.join(root_dir, full_path)
+        self.build_ast()
+
+        def on_ast_node_selected(item):
+
+            root_dir = os.getcwd()
+            full_path = os.path.join("examples", "example.vcc")
+            path = os.path.join(root_dir, full_path)
+
+            is_open = 0
+            for i in range(self.tab_view.count()):
+                if self.tab_view.tabText(i) == path.name or self.tab_view.tabText(i) == "*" + path.name:
+                    is_open = 1
+            if not is_open:
+                self.set_new_tab(path)
+            node = item.data(0, Qt.UserRole)
+            start_pos = node.start_pos
+            end_pos = node.end_pos
+            # Выделение выбранной лексемы в редакторе
+            self.current_editor.VeKrestKrestlexer.styleText(0, self.code_len) # TODO
+            self.current_editor.highlightCode(start_pos, end_pos, 9)
+
+        self.ast_tree.itemClicked.connect(lambda item: on_ast_node_selected(item))
 
         ##############################
         ###### SETUP WIDGETS ##########
@@ -320,6 +398,7 @@ class MainWindow(QMainWindow):
 
         editor = self.tab_view.currentWidget()
         self.current_file.write_text(editor.text())
+        self.build_ast()
         self.statusBar().showMessage(f"Saved {self.current_file.name}", 2000)
         editor.current_file_changed = False
 
@@ -375,18 +454,3 @@ if __name__ == '__main__':
     app = QApplication([])
     window = MainWindow()
     sys.exit(app.exec())
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
