@@ -1,23 +1,13 @@
-import os
-import ast
-
-import sys
-
-
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
-
 from PyQt5.Qsci import *
-# test
 
-import sys
+import os
 from pathlib import Path
 
 from editor import Editor
 from file_manager import FileManager
-from ast_tree import fill_widget, fill_item
-from AstTree import Node, ASTree
 from Parser import *
 from Scanner import *
 
