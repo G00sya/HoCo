@@ -269,19 +269,17 @@ class Parser( object ):
 
       tree = ASTree()
       tree.AddNode(main_tree)
-      tree.PrintTree()
       
       return tree
 
    def Defenition( self ):
-      start_pos = self.token.pos 
       self.Expect(1)
-      name = self.token.val; end_pos = self.token.pos 
+      name = self.token.val; name_pos = self.token.pos 
       params = self.Params()
       self.Expect(4)
       type = self.Type()
       tree = self.FunctionDefinition()
-      defTree = Node(value=name, t='FUNCTIONS', start_pos=start_pos, end_pos=end_pos) 
+      defTree = Node(value=name, t='FUNCTIONS', start_pos=name_pos - 1, end_pos=name_pos + len(name) - 1) 
       tree.Rename('body')
       defTree.AddChild(params)
       type.Rename('return ' + type.value)
@@ -300,34 +298,40 @@ class Parser( object ):
       return params
 
    def Type( self ):
-      start_pos = self.token.pos 
+      val = ''; end_pos = -2; d = 0 
       if self.la.kind == 8:
          self.Get( )
-         val=self.token.val 
+         val = self.token.val; end_pos = self.token.pos 
          if (self.la.kind == 9):
             self.Get( )
-            self.ConstExpression()
+            if (self.StartOf(2)):
+               self.ConstExpression()
             self.Expect(10)
+            val += "[]"; d = 2 
       elif self.la.kind == 11:
          self.Get( )
-         val=self.token.val 
+         val = self.token.val; end_pos = self.token.pos 
       elif self.la.kind == 12:
          self.Get( )
-         val=self.token.val 
+         val = self.token.val; end_pos = self.token.pos 
          if (self.la.kind == 9):
             self.Get( )
-            self.ConstExpression()
+            if (self.StartOf(2)):
+               self.ConstExpression()
             self.Expect(10)
+            val += "[]"; d = 2 
       elif self.la.kind == 13:
          self.Get( )
-         val=self.token.val 
+         val = self.token.val; end_pos = self.token.pos 
          if (self.la.kind == 9):
             self.Get( )
-            self.ConstExpression()
+            if (self.StartOf(2)):
+               self.ConstExpression()
             self.Expect(10)
+            val += "[]"; d = 2 
       else:
          self.SynErr(40)
-      type = Node(value='type: ' + val, t='TYPES', start_pos=start_pos, end_pos=(start_pos + len(val))) 
+      type = Node(value='type: ' + val, t='TYPES', start_pos=end_pos - 1, end_pos=end_pos + len(val) - 1 - d) 
       return type
 
    def FunctionDefinition( self ):
@@ -348,27 +352,28 @@ class Parser( object ):
    def FormalParameter( self ):
       type = self.Type()
       self.Expect(1)
-      start_pos = self.token.pos - len(self.token.val) 
-      fp = Node(value=self.token.val, t='KEYARG', start_pos=start_pos, end_pos=self.token.pos) 
+      fp = Node(value=self.token.val, t='KEYARG', start_pos=self.token.pos - 1, end_pos=self.token.pos - 1 + len(self.token.val)) 
       fp.AddChild(type)
       
       return fp
 
    def CompoundStatement( self ):
-      tree = Node(t='body') 
+      tree = Node(t='GRAMMAR_CONSTRUCTION') 
       self.Expect(14)
-      while self.StartOf(2):
+      start_pos = self.token.pos 
+      while self.StartOf(3):
          t = self.DeclrationOrStatement()
          tree.AddChild(t) 
 
       self.Expect(15)
+      tree.SetCoords(start_pos - 1, self.token.pos) 
       return tree
 
    def ConstExpression( self ):
       tree = self.Expression()
 
    def Statement( self ):
-      if self.StartOf(3):
+      if self.StartOf(2):
          assigm_tree = self.AssignmentExpression()
          tree = assigm_tree 
       elif self.la.kind == 14:
@@ -393,9 +398,8 @@ class Parser( object ):
       return t
 
    def IfStatement( self ):
-      start_pos = self.token.pos 
       self.Expect(20)
-      tree = Node(value='KOLI', t='KEYWORD', start_pos=start_pos, end_pos=self.token.pos) 
+      tree = Node(value='KOLI', t='KEYWORD', start_pos=self.token.pos - 1, end_pos= self.token.pos + len("KOLI") - 1) 
       self.Expect(5)
       expr_tree = self.Expression()
       self.Expect(6)
@@ -408,26 +412,27 @@ class Parser( object ):
       
       if (self.la.kind == 21):
          self.Get( )
+         otnud_pos = self.token.pos 
          else_state_tree = self.Statement()
          else_state_tree.Rename("OTNUD")
+         else_state_tree.SetCoords(otnud_pos - 1, otnud_pos + len('otnud') - 1)
+         else_state_tree.type = 'KEYWORD'
          tree.AddChild(else_state_tree)
          
       return tree
 
    def ReturnStatement( self ):
-      start_pos = self.token.pos 
       self.Expect(18)
-      tree = Node(value="VOZDAT", t='KEYWORD', start_pos=start_pos, end_pos=self.token.pos) 
-      if (self.StartOf(3)):
+      tree = Node(value="VOZDAT", t='KEYWORD', start_pos=self.token.pos - 1, end_pos=self.token.pos + len("VOZDAT") - 1) 
+      if (self.StartOf(2)):
          expr_tree = self.Expression()
          tree.AddChild(expr_tree) 
       self.Expect(17)
       return tree
 
    def WhileStatement( self ):
-      start_pos = self.token.pos 
       self.Expect(19)
-      tree = Node(value='DOKOLE', t='KEYWORD', start_pos=start_pos, end_pos=self.token.pos) 
+      tree = Node(value='DOKOLE', t='KEYWORD', start_pos=self.token.pos - 1, end_pos=self.token.pos + len("DOKOLE") - 1) 
       self.Expect(5)
       expr_tree = self.Expression()
       self.Expect(6)
@@ -453,9 +458,8 @@ class Parser( object ):
 
    def LocalDeclaration( self ):
       type = self.Type()
-      start_pos = self.token.pos 
       self.Expect(1)
-      name = self.token.val; tree = Node(value=name, t='KEYARG', start_pos=start_pos, end_pos=self.token.pos) 
+      name = self.token.val; tree = Node(value=name, t='KEYARG', start_pos=self.token.pos - 1, end_pos=self.token.pos - 1 + len(name)) 
       if self.la.kind == 5:
          self.Get( )
          if (self.StartOf(1)):
@@ -480,10 +484,9 @@ class Parser( object ):
       tree = cond_tree 
       if (self.StartOf(5)):
          op = self.AssignmentOperator()
-         end_pos = self.token.pos 
+         as_pos = self.token.pos 
          expr_tree = self.Expression()
-         start_pos = end_pos - len(op)
-         tree = Node(value=op, t='expr', start_pos=start_pos, end_pos=end_pos)
+         tree = Node(value=op, t='OPERATORS', start_pos=as_pos  - 1, end_pos=as_pos + len(op) - 1)
          tree.AddChild(cond_tree)
          tree.AddChild(expr_tree) 
          
@@ -516,40 +519,52 @@ class Parser( object ):
    def LogORExp( self ):
       and_tree_1 = self.LogANDExp()
       tree = and_tree_1 
-      trees = [and_tree_1]; start_pos = 0 
+      trees = [and_tree_1]; ops = []; positions = [] 
       while self.la.kind == 22:
-         start_pos = self.token.pos 
          self.Get( )
+         end_pos = self.token.pos 
          and_tree_2 = self.LogANDExp()
+         op = 'ALI'
+         ops.append(op)
+         positions.append((end_pos - 1, end_pos + len(op) - 1))
          trees.append(and_tree_2) 
+         
 
-      tree = ConnectSame(tree, trees, 'ALI', start_pos) 
+      tree = ConnectWithOps(tree, trees, ops, positions) 
       return tree
 
    def LogANDExp( self ):
       eq_tree_1 = self.EqualExp()
       tree = eq_tree_1 
-      trees = [eq_tree_1]; start_pos = 0 
+      trees = [eq_tree_1]; ops = []; positions = [] 
       while self.la.kind == 23:
-         start_pos = self.token.pos 
          self.Get( )
+         end_pos = self.token.pos 
          eq_tree_2 = self.EqualExp()
+         op = 'DA'
+         ops.append(op)
+         positions.append((end_pos - 1, end_pos + len(op) - 1))
          trees.append(eq_tree_2) 
+         
 
-      tree = ConnectSame(tree, trees, 'DA', start_pos) 
+      tree = ConnectWithOps(tree, trees, ops, positions) 
       return tree
 
    def EqualExp( self ):
       rel_tree_1 = self.RelationExp()
       tree = rel_tree_1 
-      trees = [rel_tree_1]; start_pos = 0 
+      trees = [rel_tree_1]; ops = []; positions = [] 
       while self.la.kind == 24:
-         start_pos = self.token.pos 
          self.Get( )
+         end_pos = self.token.pos 
          rel_tree_2 = self.RelationExp()
+         op = '=='
+         ops.append(op)
+         positions.append((end_pos - 1, end_pos + len(op) - 1))
          trees.append(rel_tree_2) 
+         
 
-      tree = ConnectSame(tree, trees, '==', start_pos) 
+      tree = ConnectWithOps(tree, trees, ops, positions) 
       return tree
 
    def RelationExp( self ):
@@ -572,7 +587,7 @@ class Parser( object ):
          end_pos = self.token.pos 
          sub_tree_2 = self.AddExp()
          ops.append(op)
-         positions.append((end_pos - 1, end_pos))
+         positions.append((end_pos - len(op), end_pos))
          trees.append(sub_tree_2)
          
 
@@ -634,10 +649,10 @@ class Parser( object ):
          s = self.PostFixExp()
          tree = s 
       elif self.StartOf(8):
-         start_pos = self.toke.pos 
          op = self.UnaryOperator()
+         op_pos = self.token.pos 
          cast_tree = self.CastExp()
-         tree = Node(value=op, start_pos=start_pos, end_pos=(start_pos + len(op)))
+         tree = Node(value=op, t='OPERATORS', start_pos=op_pos - 1, end_pos=op_pos + len(op) - 1)
          tree.AddChild(cast_tree) 
          
       else:
@@ -679,20 +694,20 @@ class Parser( object ):
    def Primary( self ):
       if self.la.kind == 1:
          self.Get( )
-         prim = Node(value=self.token.val, t='IDENTIFIER', start_pos=(self.token.pos - len(self.token.val)), end_pos=self.token.pos) 
+         prim = Node(value=self.token.val, t='KEYARG', start_pos=self.token.pos - 1, end_pos= self.token.pos + len(self.token.val) - 1) 
       elif self.la.kind == 3:
          self.Get( )
-         prim = Node(value=self.token.val, t='STRING', start_pos=(self.token.pos - len(self.token.val)), end_pos=self.token.pos) 
+         prim = Node(value=self.token.val, t='STRING', start_pos=self.token.pos - 1, end_pos= self.token.pos + len(self.token.val) - 1) 
       elif self.la.kind == 2:
          self.Get( )
-         prim = Node(value=self.token.val, t='CONSTANTS', start_pos=(self.token.pos - len(self.token.val)), end_pos=self.token.pos) 
+         prim = Node(value=self.token.val, t='CONSTANTS', start_pos=self.token.pos - 1, end_pos= self.token.pos + len(self.token.val) - 1)  
       elif self.la.kind == 5:
          self.Get( )
          start_pos = self.token.pos 
          tree = self.Expression()
          self.Expect(6)
          end_pos = self.token.pos 
-         prim = Node(value="()", t='BRACKETS', start_pos=start_pos, end_pos=end_pos) 
+         prim = Node(value="()", t='BRACKETS', start_pos=start_pos - 1, end_pos=end_pos) 
          prim.AddChild(tree) 
          
       else:
@@ -700,9 +715,9 @@ class Parser( object ):
       return prim
 
    def FunctionCall( self ):
-      res = Node(value=self.token.val, t='FUNCTIONS', start_pos=(self.token.pos-len(self.token.val)), end_pos=self.token.pos) 
+      res = Node(value=self.token.val, t='FUNCTIONS', start_pos=self.token.pos - 1, end_pos=self.token.pos + len(self.token.val) - 1) 
       self.Expect(5)
-      if (self.StartOf(3)):
+      if (self.StartOf(2)):
          expr = self.ActualParameters()
          res.AddChild(expr) 
       self.Expect(6)
@@ -733,8 +748,8 @@ class Parser( object ):
    set = [
       [T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x],
       [x,x,x,x, x,x,x,x, T,x,x,T, T,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x],
-      [x,T,T,T, x,T,x,x, T,x,x,T, T,T,T,x, x,x,T,T, T,x,x,x, x,x,x,x, x,T,T,T, x,x,x,x, x,x,T,x, x],
       [x,T,T,T, x,T,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,T,T, x,x,x,x, x,x,T,x, x],
+      [x,T,T,T, x,T,x,x, T,x,x,T, T,T,T,x, x,x,T,T, T,x,x,x, x,x,x,x, x,T,T,T, x,x,x,x, x,x,T,x, x],
       [x,T,T,T, x,T,x,x, x,x,x,x, x,x,T,x, x,x,T,T, T,x,x,x, x,x,x,x, x,T,T,T, x,x,x,x, x,x,T,x, x],
       [x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, T,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,T,T, T,T,x,x, x],
       [x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,x,x,x, x,T,T,T, T,x,x,x, x,x,x,x, x,x,x,x, x],
