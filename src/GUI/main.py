@@ -115,6 +115,9 @@ class MainWindow(QMainWindow):
         default = color_change_menu.addAction("DEFAULT Color")
         default.triggered.connect(lambda: self.show_settings_dialog("DEFAULT"))
 
+        default = color_change_menu.addAction("KEYARGS Color")
+        default.triggered.connect(lambda: self.show_settings_dialog("KEYARGS"))
+
         keyword = color_change_menu.addAction("KEYWORD Color")
         keyword.triggered.connect(lambda: self.show_settings_dialog("KEYWORD"))
 
